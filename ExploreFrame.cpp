@@ -73,7 +73,14 @@ ExploreFrame::ExploreFrame( wxWindow* parent ):
 
 void ExploreFrame::OnOpenClicked( wxCommandEvent& event )
 {
-	wxFileDialog fileDlg(this, _("Select WAD file"), wxString(), wxString(), "hlm2_*.wad", wxFD_DEFAULT_STYLE | wxFD_FILE_MUST_EXIST);
+	wxString hlmPath;
+#if defined(__WXOSX__)
+	hlmPath = wxFileName::GetHomeDir() + "/Library/Application Support/Steam/steamapps/common/Hotline Miami 2/HotlineMiami2.app/Contents/Resources/";
+#elif defined(__WXMSW__
+	
+#endif
+	
+	wxFileDialog fileDlg(this, _("Select WAD file"), hlmPath, wxString(), "*.wad", wxFD_DEFAULT_STYLE | wxFD_FILE_MUST_EXIST);
 
 	if (fileDlg.ShowModal() == wxID_OK)
 	{
