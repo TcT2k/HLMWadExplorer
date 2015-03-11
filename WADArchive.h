@@ -9,6 +9,7 @@
 #include <wx/wx.h>
 
 #include <wx/vector.h>
+#include <wx/filename.h>
 
 class WADArchiveEntry
 {
@@ -19,6 +20,12 @@ public:
 		m_offset(offset)
 	{
 
+	}
+	
+	WADArchiveEntry(const wxString& fileName, const wxString& sourceFileName):
+		m_fileName(fileName)
+	{
+		SetSourceFileName(sourceFileName);
 	}
 
 	const wxString& GetFileName() const
@@ -35,11 +42,24 @@ public:
 	{
 		return m_offset;
 	}
+	
+	const wxString& GetSourceFileName() const
+	{
+		return m_sourceFileName;
+	}
+	
+	void SetSourceFileName(const wxString& value)
+	{
+		m_sourceFileName = value;
+		m_offset = 0;
+		m_size = wxFileName::GetSize(value).ToULong();
+	}
 
 private:
 	wxString m_fileName;
 	wxInt64 m_size;
 	wxInt64 m_offset;
+	wxString m_sourceFileName;
 };
 
 class WADArchive
@@ -61,6 +81,12 @@ public:
 	{
 		return m_fileName;
 	}
+	
+	void Remove(size_t itemIndex);
+	
+	void Add(const WADArchiveEntry& entry);
+	
+	void Replace(size_t itemIndex, const wxString& sourceFileName);
 
 	bool Extract(const WADArchiveEntry& entry, const wxString& targetFileName);
 
@@ -71,11 +97,17 @@ public:
 	bool Save(wxOutputStream& oStr);
 	
 	bool Save(const wxString& targetFileName);
+	
+	bool IsModified() const
+	{
+		return m_modified;
+	}
 
 private:
 	wxString m_fileName;
 	wxVector<WADArchiveEntry> m_entries;
 	wxFileOffset m_dataOffset;
+	bool m_modified;
 
 	void ParseFile();
 };
