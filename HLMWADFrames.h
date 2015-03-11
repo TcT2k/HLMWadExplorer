@@ -21,9 +21,10 @@
 #include <wx/colour.h>
 #include <wx/settings.h>
 #include <wx/dataview.h>
-#include <wx/statbmp.h>
 #include <wx/sizer.h>
 #include <wx/panel.h>
+#include <wx/statbmp.h>
+#include <wx/splitter.h>
 #include <wx/frame.h>
 
 ///////////////////////////////////////////////////////////////////////////
@@ -43,6 +44,8 @@ class BaseExploreFrame : public wxFrame
 		wxMenu* file;
 		wxMenu* resource;
 		wxMenu* help;
+		wxSplitterWindow* m_mainSplitter;
+		wxPanel* m_listPanel;
 		wxDataViewListCtrl* m_fileListCtrl;
 		wxDataViewColumn* m_fileListNameColumn;
 		wxDataViewColumn* m_fileListSizeColumn;
@@ -69,6 +72,12 @@ class BaseExploreFrame : public wxFrame
 		BaseExploreFrame( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = wxEmptyString, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 886,484 ), long style = wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL );
 		
 		~BaseExploreFrame();
+		
+		void m_mainSplitterOnIdle( wxIdleEvent& )
+		{
+			m_mainSplitter->SetSashPosition( 260 );
+			m_mainSplitter->Disconnect( wxEVT_IDLE, wxIdleEventHandler( BaseExploreFrame::m_mainSplitterOnIdle ), NULL, this );
+		}
 	
 };
 

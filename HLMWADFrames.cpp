@@ -73,12 +73,23 @@ BaseExploreFrame::BaseExploreFrame( wxWindow* parent, wxWindowID id, const wxStr
 	wxBoxSizer* bSizer2;
 	bSizer2 = new wxBoxSizer( wxHORIZONTAL );
 	
-	m_fileListCtrl = new wxDataViewListCtrl( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE );
+	m_mainSplitter = new wxSplitterWindow( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_3D|wxSP_LIVE_UPDATE );
+	m_mainSplitter->Connect( wxEVT_IDLE, wxIdleEventHandler( BaseExploreFrame::m_mainSplitterOnIdle ), NULL, this );
+	
+	m_listPanel = new wxPanel( m_mainSplitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer3;
+	bSizer3 = new wxBoxSizer( wxVERTICAL );
+	
+	m_fileListCtrl = new wxDataViewListCtrl( m_listPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE );
 	m_fileListNameColumn = m_fileListCtrl->AppendTextColumn( _("Name") ); 
 	m_fileListSizeColumn = m_fileListCtrl->AppendTextColumn( _("Size") ); 
-	bSizer2->Add( m_fileListCtrl, 1, wxEXPAND, 5 );
+	bSizer3->Add( m_fileListCtrl, 1, wxEXPAND, 5 );
 	
-	m_previewPanel = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	
+	m_listPanel->SetSizer( bSizer3 );
+	m_listPanel->Layout();
+	bSizer3->Fit( m_listPanel );
+	m_previewPanel = new wxPanel( m_mainSplitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	wxBoxSizer* bSizer4;
 	bSizer4 = new wxBoxSizer( wxVERTICAL );
 	
@@ -95,7 +106,8 @@ BaseExploreFrame::BaseExploreFrame( wxWindow* parent, wxWindowID id, const wxStr
 	m_previewPanel->SetSizer( bSizer4 );
 	m_previewPanel->Layout();
 	bSizer4->Fit( m_previewPanel );
-	bSizer2->Add( m_previewPanel, 2, wxEXPAND | wxALL, 5 );
+	m_mainSplitter->SplitVertically( m_listPanel, m_previewPanel, 260 );
+	bSizer2->Add( m_mainSplitter, 1, wxEXPAND, 5 );
 	
 	
 	this->SetSizer( bSizer2 );
