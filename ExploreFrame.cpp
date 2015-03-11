@@ -14,6 +14,8 @@
 #include <wx/stdpaths.h>
 #include <wx/mstream.h>
 #include <wx/busyinfo.h>
+#include <wx/aboutdlg.h>
+#include <wx/textdlg.h>
 
 class FileDataModel : public wxDataViewVirtualListModel
 {
@@ -67,13 +69,58 @@ ExploreFrame::ExploreFrame( wxWindow* parent ):
 {
 	SetTitle(wxTheApp->GetAppDisplayName());
 	m_menubar->Enable(ID_EXTRACT, false);
+	m_menubar->Enable(wxID_SAVE, false);
+	m_menubar->Enable(wxID_SAVEAS, false);
 	m_fileListNameColumn->SetWidth(150);
 	m_fileListSizeColumn->SetAlignment(wxALIGN_RIGHT);
 }
 
+void ExploreFrame::OnAboutClicked( wxCommandEvent& event )
+{
+	wxAboutDialogInfo aboutInfo;
+	aboutInfo.SetName(wxTheApp->GetAppDisplayName());
+	aboutInfo.SetDescription(_("HLM Wad Extractor"));
+	aboutInfo.SetCopyright("(C) 2015");
+	aboutInfo.SetWebSite("https://github.com/TcT2k/HLMWadExplorer");
+	aboutInfo.AddDeveloper("Tobias Taschner");
+	wxAboutBox(aboutInfo);
+}
+
+void ExploreFrame::OnWindowClose( wxCloseEvent& event )
+{
+	if (m_archive && m_archive->IsModified())
+	{
+		switch (wxMessageBox(_("Do you wan't to save unsaved changes?"), _("Warning"), wxICON_WARNING | wxYES_NO | wxCANCEL | wxNO_DEFAULT, this))
+		{
+			case wxYES:
+			{
+				wxBusyInfo busyInfo(_("Writing file..."));
+				wxBusyCursor busyCursor;
+				m_archive->Save();
+				event.Skip();
+				break;
+			}
+			case wxNO:
+				event.Skip();
+				break;
+			default:
+				event.Veto();
+				break;
+		}
+	} else
+		event.Skip();
+}
+
 void ExploreFrame::OnOpenClicked( wxCommandEvent& event )
 {
-	wxFileDialog fileDlg(this, _("Select WAD file"), wxString(), wxString(), "hlm2_*.wad", wxFD_DEFAULT_STYLE | wxFD_FILE_MUST_EXIST);
+	wxString hlmPath;
+#if defined(__WXOSX__)
+	hlmPath = wxFileName::GetHomeDir() + "/Library/Application Support/Steam/steamapps/common/Hotline Miami 2/HotlineMiami2.app/Contents/Resources/";
+#elif defined(__WXMSW__)
+	
+#endif
+	
+	wxFileDialog fileDlg(this, _("Select WAD file"), hlmPath, wxString(), "*.wad", wxFD_DEFAULT_STYLE | wxFD_FILE_MUST_EXIST);
 
 	if (fileDlg.ShowModal() == wxID_OK)
 	{
@@ -87,6 +134,48 @@ void ExploreFrame::OpenFile(const wxString& filename)
 	wxObjectDataPtr<FileDataModel> model(new FileDataModel(m_archive.get()));
 	m_fileListCtrl->AssociateModel(model.get());
 	m_menubar->Enable(ID_EXTRACT, true);
+	m_menubar->Enable(wxID_ADD, true);
+	m_menubar->Enable(wxID_SAVE, true);
+	m_menubar->Enable(wxID_SAVEAS, true);
+#if defined(__WXOSX__)
+	OSXSetModified(false);
+#endif
+	
+	wxFileName inputFN(filename);
+	SetTitle(wxString::Format("%s - %s", wxTheApp->GetAppDisplayName(), inputFN.GetName()));
+}
+
+void ExploreFrame::OnSaveClicked( wxCommandEvent& event )
+{
+	if (wxMessageBox(_("Are you sure you want to overwrite the WAD?"), _("Warning"), wxICON_WARNING | wxYES_NO | wxNO_DEFAULT, this) == wxYES)
+	{
+		wxBusyInfo busyInfo(_("Writing file..."));
+		wxBusyCursor busyCursor;
+		m_archive->Save();
+#if defined(__WXOSX__)
+		OSXSetModified(false);
+#endif
+	}
+}
+
+void ExploreFrame::OnSaveAsClicked( wxCommandEvent& event )
+{
+	wxFileName saveAsFN(m_archive->GetFileName());
+	
+	wxFileDialog fileDlg(this, _("Select destination filename"), saveAsFN.GetPath(), saveAsFN.GetFullName(), "*.wad", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+	if (fileDlg.ShowModal() == wxID_OK)
+	{
+		wxBusyInfo busyInfo(_("Writing file..."));
+		wxBusyCursor busyCursor;
+		m_archive->Save(fileDlg.GetPath());
+		OpenFile(fileDlg.GetPath());
+	}
+}
+
+const WADArchiveEntry& ExploreFrame::GetSelectedEntry() const
+{
+	size_t index = (size_t) m_fileListCtrl->GetSelection().GetID() - 1;
+	return m_archive->GetEntry(index);
 }
 
 void ExploreFrame::OnExtractClicked( wxCommandEvent& event )
@@ -123,8 +212,7 @@ void ExploreFrame::OnExtractClicked( wxCommandEvent& event )
 		}
 		wxLogInfo(_("Files extracted to %s"), dirDlg.GetPath());
 	} else {
-		size_t index = (size_t) m_fileListCtrl->GetSelection().GetID() - 1;
-		const WADArchiveEntry& entry = m_archive->GetEntry(index);
+		const WADArchiveEntry& entry = GetSelectedEntry();
 
 		wxFileName fn(entry.GetFileName(), wxPATH_UNIX);
 
@@ -143,6 +231,67 @@ void ExploreFrame::OnExtractClicked( wxCommandEvent& event )
 	}
 }
 
+void ExploreFrame::OnReplaceClicked( wxCommandEvent& event )
+{
+	const WADArchiveEntry& entry = GetSelectedEntry();
+	wxFileName entryFN(entry.GetFileName());
+	
+	wxFileDialog fileDlg(this, wxString::Format(_("Select file to replace %s"), entry.GetFileName()), wxString(),
+						 entryFN.GetFullName(), "*." + entryFN.GetExt(), wxFD_DEFAULT_STYLE  | wxFD_FILE_MUST_EXIST);
+	if (fileDlg.ShowModal() == wxID_OK)
+	{
+		size_t index = (size_t) m_fileListCtrl->GetSelection().GetID() - 1;
+		m_archive->Replace(index, fileDlg.GetPath());
+		static_cast<FileDataModel*>(m_fileListCtrl->GetModel())->RowChanged(index);
+		wxDataViewEvent evt(wxEVT_DATAVIEW_SELECTION_CHANGED);
+		OnFileListSelectionChanged(evt);
+		
+#if defined(__WXOSX__)
+		OSXSetModified(true);
+#endif
+	}
+}
+
+void ExploreFrame::OnAddClicked( wxCommandEvent& event )
+{
+	wxFileDialog fileDlg(this, _("Select file to add"), wxString(), wxString(), "*.*", wxFD_DEFAULT_STYLE | wxFD_FILE_MUST_EXIST);
+	if (fileDlg.ShowModal() == wxID_OK)
+	{
+		wxFileName newFN(fileDlg.GetPath());
+		wxString newEntryName = newFN.GetFullName();
+		
+		wxTextEntryDialog dlg(this, _("Enter filename in WAD"), _("Add resource"), newEntryName);
+		if (dlg.ShowModal() == wxID_OK)
+		{
+			newEntryName = dlg.GetValue();
+			m_archive->Add(WADArchiveEntry(newEntryName, fileDlg.GetPath()));
+			static_cast<FileDataModel*>(m_fileListCtrl->GetModel())->RowAppended();
+			
+#if defined(__WXOSX__)
+			OSXSetModified(true);
+#endif
+		}
+	}
+}
+
+void ExploreFrame::OnDeleteClicked( wxCommandEvent& event )
+{
+	const WADArchiveEntry& entry = GetSelectedEntry();
+	if (wxMessageBox(wxString::Format(_("Are you sure you want to delete %s?"), entry.GetFileName()),
+									  _("Warning"), wxICON_WARNING | wxYES_NO | wxNO_DEFAULT, this) == wxYES)
+	{
+		size_t index = (size_t) m_fileListCtrl->GetSelection().GetID() - 1;
+		m_archive->Remove(index);
+		static_cast<FileDataModel*>(m_fileListCtrl->GetModel())->RowDeleted(index);
+		wxDataViewEvent evt(wxEVT_DATAVIEW_SELECTION_CHANGED);
+		OnFileListSelectionChanged(evt);
+		
+#if defined(__WXOSX__)
+		OSXSetModified(true);
+#endif
+	}
+}
+
 void ExploreFrame::OnQuitClicked( wxCommandEvent& event )
 {
 	Close();
@@ -150,6 +299,10 @@ void ExploreFrame::OnQuitClicked( wxCommandEvent& event )
 
 void ExploreFrame::OnFileListSelectionChanged( wxDataViewEvent& event )
 {
+	m_menubar->Enable(ID_REPLACE, m_fileListCtrl->GetSelectedItemsCount() > 0);
+	m_menubar->Enable(ID_EXTRACT, m_fileListCtrl->GetSelectedItemsCount() > 0);
+	m_menubar->Enable(wxID_DELETE, m_fileListCtrl->GetSelectedItemsCount() > 0);
+	
 	if (m_fileListCtrl->GetSelectedItemsCount() != 1)
 		return;
 		

@@ -29,6 +29,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #define ID_EXTRACT 1000
+#define ID_REPLACE 1001
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Class BaseExploreFrame
@@ -40,6 +41,8 @@ class BaseExploreFrame : public wxFrame
 	protected:
 		wxMenuBar* m_menubar;
 		wxMenu* file;
+		wxMenu* resource;
+		wxMenu* help;
 		wxDataViewListCtrl* m_fileListCtrl;
 		wxDataViewColumn* m_fileListNameColumn;
 		wxDataViewColumn* m_fileListSizeColumn;
@@ -47,9 +50,16 @@ class BaseExploreFrame : public wxFrame
 		wxStaticBitmap* m_previewBitmap;
 		
 		// Virtual event handlers, overide them in your derived class
+		virtual void OnWindowClose( wxCloseEvent& event ) { event.Skip(); }
 		virtual void OnOpenClicked( wxCommandEvent& event ) { event.Skip(); }
-		virtual void OnExtractClicked( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnSaveClicked( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnSaveAsClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnQuitClicked( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnExtractClicked( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnReplaceClicked( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnAddClicked( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnDeleteClicked( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnAboutClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnFileListSelectionChanged( wxDataViewEvent& event ) { event.Skip(); }
 		virtual void OnFileListDoubleClick( wxMouseEvent& event ) { event.Skip(); }
 		
