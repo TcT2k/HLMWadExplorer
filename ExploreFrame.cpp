@@ -16,6 +16,9 @@
 #include <wx/busyinfo.h>
 #include <wx/aboutdlg.h>
 #include <wx/textdlg.h>
+#if defined(__WXMSW__)
+#include <wx/msw/registry.h>
+#endif
 
 class FileDataModel : public wxDataViewVirtualListModel
 {
@@ -117,7 +120,13 @@ void ExploreFrame::OnOpenClicked( wxCommandEvent& event )
 #if defined(__WXOSX__)
 	hlmPath = wxFileName::GetHomeDir() + "/Library/Application Support/Steam/steamapps/common/Hotline Miami 2/HotlineMiami2.app/Contents/Resources/";
 #elif defined(__WXMSW__)
-	
+	wxRegKey regKey(wxRegKey::HKCU, "Software\\Valve\\Steam");
+	if (regKey.Open(wxRegKey::Read))
+	{
+		regKey.QueryValue("SteamPath", hlmPath);
+
+		hlmPath += "\\SteamApps\\Common\\Hotline Miami 2";
+	}
 #endif
 	
 	wxFileDialog fileDlg(this, _("Select WAD file"), hlmPath, wxString(), "*.wad", wxFD_DEFAULT_STYLE | wxFD_FILE_MUST_EXIST);
