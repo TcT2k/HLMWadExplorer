@@ -50,7 +50,7 @@ BaseExploreFrame::BaseExploreFrame( wxWindow* parent, wxWindowID id, const wxStr
 	resource->AppendSeparator();
 	
 	wxMenuItem* add;
-	add = new wxMenuItem( resource, wxID_ADD, wxString( wxEmptyString ) + wxT('\t') + wxT("Ctrl+A"), wxEmptyString, wxITEM_NORMAL );
+	add = new wxMenuItem( resource, wxID_ADD, wxString( _("&Add...") ) + wxT('\t') + wxT("Ctrl+A"), wxEmptyString, wxITEM_NORMAL );
 	resource->Append( add );
 	add->Enable( false );
 	

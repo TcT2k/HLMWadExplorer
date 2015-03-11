@@ -116,7 +116,7 @@ void ExploreFrame::OnOpenClicked( wxCommandEvent& event )
 	wxString hlmPath;
 #if defined(__WXOSX__)
 	hlmPath = wxFileName::GetHomeDir() + "/Library/Application Support/Steam/steamapps/common/Hotline Miami 2/HotlineMiami2.app/Contents/Resources/";
-#elif defined(__WXMSW__
+#elif defined(__WXMSW__)
 	
 #endif
 	
