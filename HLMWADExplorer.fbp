@@ -176,7 +176,7 @@
                         <property name="checked">0</property>
                         <property name="enabled">1</property>
                         <property name="help"></property>
-                        <property name="id">wxID_CLOSE</property>
+                        <property name="id">wxID_EXIT</property>
                         <property name="kind">wxITEM_NORMAL</property>
                         <property name="label"></property>
                         <property name="name">quit</property>
