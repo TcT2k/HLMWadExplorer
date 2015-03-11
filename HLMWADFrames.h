@@ -40,6 +40,7 @@ class BaseExploreFrame : public wxFrame
 	protected:
 		wxMenuBar* m_menubar;
 		wxMenu* file;
+		wxMenu* help;
 		wxDataViewListCtrl* m_fileListCtrl;
 		wxDataViewColumn* m_fileListNameColumn;
 		wxDataViewColumn* m_fileListSizeColumn;
@@ -52,6 +53,7 @@ class BaseExploreFrame : public wxFrame
 		virtual void OnSaveAsClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnExtractClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnQuitClicked( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnAboutClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnFileListSelectionChanged( wxDataViewEvent& event ) { event.Skip(); }
 		virtual void OnFileListDoubleClick( wxMouseEvent& event ) { event.Skip(); }
 		

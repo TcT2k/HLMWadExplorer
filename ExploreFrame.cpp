@@ -14,6 +14,7 @@
 #include <wx/stdpaths.h>
 #include <wx/mstream.h>
 #include <wx/busyinfo.h>
+#include <wx/aboutdlg.h>
 
 class FileDataModel : public wxDataViewVirtualListModel
 {
@@ -71,6 +72,17 @@ ExploreFrame::ExploreFrame( wxWindow* parent ):
 	m_menubar->Enable(wxID_SAVEAS, false);
 	m_fileListNameColumn->SetWidth(150);
 	m_fileListSizeColumn->SetAlignment(wxALIGN_RIGHT);
+}
+
+void ExploreFrame::OnAboutClicked( wxCommandEvent& event )
+{
+	wxAboutDialogInfo aboutInfo;
+	aboutInfo.SetName(wxTheApp->GetAppDisplayName());
+	aboutInfo.SetDescription(_("HLM Wad Extractor"));
+	aboutInfo.SetCopyright("(C) 2015");
+	aboutInfo.SetWebSite("https://github.com/TcT2k/HLMWadExplorer");
+	aboutInfo.AddDeveloper("Tobias Taschner");
+	wxAboutBox(aboutInfo);
 }
 
 void ExploreFrame::OnOpenClicked( wxCommandEvent& event )

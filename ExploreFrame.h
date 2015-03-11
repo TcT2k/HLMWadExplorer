@@ -23,6 +23,7 @@ class ExploreFrame : public BaseExploreFrame
 		void OnSaveAsClicked( wxCommandEvent& event );
 		void OnExtractClicked( wxCommandEvent& event );
 		void OnQuitClicked( wxCommandEvent& event );
+		void OnAboutClicked( wxCommandEvent& event );
 		void OnFileListSelectionChanged( wxDataViewEvent& event );
 		void OnFileListDoubleClick( wxMouseEvent& event );
 	public:
