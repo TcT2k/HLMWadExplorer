@@ -48,6 +48,8 @@ class BaseExploreFrame : public wxFrame
 		
 		// Virtual event handlers, overide them in your derived class
 		virtual void OnOpenClicked( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnSaveClicked( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnSaveAsClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnExtractClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnQuitClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnFileListSelectionChanged( wxDataViewEvent& event ) { event.Skip(); }

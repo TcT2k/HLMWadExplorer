@@ -67,6 +67,8 @@ ExploreFrame::ExploreFrame( wxWindow* parent ):
 {
 	SetTitle(wxTheApp->GetAppDisplayName());
 	m_menubar->Enable(ID_EXTRACT, false);
+	m_menubar->Enable(wxID_SAVE, false);
+	m_menubar->Enable(wxID_SAVEAS, false);
 	m_fileListNameColumn->SetWidth(150);
 	m_fileListSizeColumn->SetAlignment(wxALIGN_RIGHT);
 }
@@ -94,6 +96,35 @@ void ExploreFrame::OpenFile(const wxString& filename)
 	wxObjectDataPtr<FileDataModel> model(new FileDataModel(m_archive.get()));
 	m_fileListCtrl->AssociateModel(model.get());
 	m_menubar->Enable(ID_EXTRACT, true);
+	m_menubar->Enable(wxID_SAVE, true);
+	m_menubar->Enable(wxID_SAVEAS, true);
+	
+	wxFileName inputFN(filename);
+	SetTitle(wxString::Format("%s - %s", wxTheApp->GetAppDisplayName(), inputFN.GetName()));
+}
+
+void ExploreFrame::OnSaveClicked( wxCommandEvent& event )
+{
+	if (wxMessageBox(_("Are you sure you want to overwrite the WAD?"), _("Warning"), wxICON_WARNING | wxYES_NO | wxNO_DEFAULT, this) == wxOK)
+	{
+		wxBusyInfo busyInfo(_("Writing file..."));
+		wxBusyCursor busyCursor;
+		m_archive->Save();
+	}
+}
+
+void ExploreFrame::OnSaveAsClicked( wxCommandEvent& event )
+{
+	wxFileName saveAsFN(m_archive->GetFileName());
+	
+	wxFileDialog fileDlg(this, _("Select destination filename"), saveAsFN.GetPath(), saveAsFN.GetFullName(), "*.wad", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+	if (fileDlg.ShowModal() == wxID_OK)
+	{
+		wxBusyInfo busyInfo(_("Writing file..."));
+		wxBusyCursor busyCursor;
+		m_archive->Save(fileDlg.GetPath());
+		OpenFile(fileDlg.GetPath());
+	}
 }
 
 void ExploreFrame::OnExtractClicked( wxCommandEvent& event )

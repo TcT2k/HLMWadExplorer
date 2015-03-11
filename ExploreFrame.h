@@ -1,10 +1,3 @@
-/*
-** HLMWadExplorer
-**
-** Coypright (C) 2015 Tobias Taschner <github@tc84.de>
-**
-** Licensed under GPL v3 or later
-*/
 #ifndef __ExploreFrame__
 #define __ExploreFrame__
 
@@ -26,6 +19,8 @@ class ExploreFrame : public BaseExploreFrame
 	protected:
 		// Handlers for BaseExploreFrame events.
 		void OnOpenClicked( wxCommandEvent& event );
+		void OnSaveClicked( wxCommandEvent& event );
+		void OnSaveAsClicked( wxCommandEvent& event );
 		void OnExtractClicked( wxCommandEvent& event );
 		void OnQuitClicked( wxCommandEvent& event );
 		void OnFileListSelectionChanged( wxDataViewEvent& event );
@@ -39,6 +34,7 @@ class ExploreFrame : public BaseExploreFrame
 		wxSharedPtr<WADArchive> m_archive;
 
 		void OpenFile(const wxString& filename);
+
 };
 
 #endif // __ExploreFrame__

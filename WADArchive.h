@@ -47,19 +47,30 @@ class WADArchive
 public:
 	WADArchive(const wxString& fileName);
 
-	size_t GetEntryCount()
+	size_t GetEntryCount() const
 	{
 		return m_entries.size();
 	}
 
-	const WADArchiveEntry& GetEntry(size_t index)
+	const WADArchiveEntry& GetEntry(size_t index) const
 	{
 		return m_entries[index];
+	}
+	
+	const wxString& GetFileName() const
+	{
+		return m_fileName;
 	}
 
 	bool Extract(const WADArchiveEntry& entry, const wxString& targetFileName);
 
 	bool Extract(const WADArchiveEntry& entry, wxOutputStream& oStr);
+	
+	bool Save();
+	
+	bool Save(wxOutputStream& oStr);
+	
+	bool Save(const wxString& targetFileName);
 
 private:
 	wxString m_fileName;

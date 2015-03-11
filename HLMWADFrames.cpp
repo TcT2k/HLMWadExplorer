@@ -20,6 +20,14 @@ BaseExploreFrame::BaseExploreFrame( wxWindow* parent, wxWindowID id, const wxStr
 	open = new wxMenuItem( file, wxID_OPEN, wxString( wxEmptyString ) , wxEmptyString, wxITEM_NORMAL );
 	file->Append( open );
 	
+	wxMenuItem* save;
+	save = new wxMenuItem( file, wxID_SAVE, wxString( wxEmptyString ) , wxEmptyString, wxITEM_NORMAL );
+	file->Append( save );
+	
+	wxMenuItem* saveas;
+	saveas = new wxMenuItem( file, wxID_SAVEAS, wxString( wxEmptyString ) , wxEmptyString, wxITEM_NORMAL );
+	file->Append( saveas );
+	
 	wxMenuItem* extract;
 	extract = new wxMenuItem( file, ID_EXTRACT, wxString( _("&Extract...") ) + wxT('\t') + wxT("Ctrl+E"), wxEmptyString, wxITEM_NORMAL );
 	file->Append( extract );
@@ -69,6 +77,8 @@ BaseExploreFrame::BaseExploreFrame( wxWindow* parent, wxWindowID id, const wxStr
 	
 	// Connect Events
 	this->Connect( open->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnOpenClicked ) );
+	this->Connect( save->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnSaveClicked ) );
+	this->Connect( saveas->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnSaveAsClicked ) );
 	this->Connect( extract->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnExtractClicked ) );
 	this->Connect( quit->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnQuitClicked ) );
 	this->Connect( wxID_ANY, wxEVT_COMMAND_DATAVIEW_SELECTION_CHANGED, wxDataViewEventHandler( BaseExploreFrame::OnFileListSelectionChanged ) );
@@ -79,6 +89,8 @@ BaseExploreFrame::~BaseExploreFrame()
 {
 	// Disconnect Events
 	this->Disconnect( wxID_OPEN, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnOpenClicked ) );
+	this->Disconnect( wxID_SAVE, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnSaveClicked ) );
+	this->Disconnect( wxID_SAVEAS, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnSaveAsClicked ) );
 	this->Disconnect( ID_EXTRACT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnExtractClicked ) );
 	this->Disconnect( wxID_EXIT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnQuitClicked ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_DATAVIEW_SELECTION_CHANGED, wxDataViewEventHandler( BaseExploreFrame::OnFileListSelectionChanged ) );

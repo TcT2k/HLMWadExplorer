@@ -84,3 +84,51 @@ bool WADArchive::Extract(const WADArchiveEntry& entry, wxOutputStream& oStr)
 
 	return true;
 }
+
+bool WADArchive::Save()
+{
+	return Save(m_fileName);
+}
+
+bool WADArchive::Save(wxOutputStream& oStr)
+{
+	// Write directory
+	wxUint32 fileCount = m_entries.size();
+	oStr.Write(&fileCount, sizeof(fileCount));
+	
+	wxInt64 currentDataOffset = 0;
+	
+	for (auto entry = m_entries.begin(); entry != m_entries.end(); ++entry)
+	{
+		wxScopedCharBuffer utf8FN = entry->GetFileName().utf8_str();
+		wxUint32 fileNameLength = utf8FN.length();
+		oStr.Write(&fileNameLength, sizeof(fileNameLength));
+		
+		oStr.Write(utf8FN.data(), fileNameLength);
+		
+		wxUint64 fileSize = entry->GetSize();
+		oStr.Write(&fileSize, sizeof(fileSize));
+		
+		oStr.Write(&currentDataOffset, sizeof(currentDataOffset));
+		
+		currentDataOffset += entry->GetSize();
+	}
+	
+	// Write file data
+	for (auto entry = m_entries.begin(); entry != m_entries.end(); ++entry)
+		Extract(*entry, oStr);
+	
+	return true;
+}
+
+bool WADArchive::Save(const wxString& targetFileName)
+{
+	wxTempFileOutputStream oStr(targetFileName);
+	if (!oStr.IsOk())
+		return false;
+	
+	if (Save(oStr))
+		return oStr.Commit();
+	else
+		return false;
+}
