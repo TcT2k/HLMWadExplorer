@@ -114,7 +114,10 @@ wxBitmap WADArchive::ExtractBitmap(const WADArchiveEntry& entry)
 	wxMemoryInputStream iStr(buffer->GetBufferStart(), buffer->GetBufferSize());
 	wxImage img(iStr);
 
-	return wxBitmap(img);
+	if (!img.IsOk())
+		return wxNullBitmap;
+	else
+		return wxBitmap(img);
 }
 
 bool WADArchive::Save()

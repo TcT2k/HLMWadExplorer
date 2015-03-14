@@ -11,7 +11,8 @@ void TexturePackPanel::LoadTexture(wxInputStream& iStr, wxBitmap bitmap)
 {
 	m_bitmap = bitmap;
 	wxSharedPtr<wxGraphicsContext> dstGC(wxGraphicsContext::Create(this));
-	m_drawBitmap = dstGC->CreateBitmap(bitmap);
+	if (m_bitmap.IsOk())
+		m_drawBitmap = dstGC->CreateBitmap(bitmap);
 
 	m_texturePack = new TexturePack(iStr);
 
@@ -22,9 +23,12 @@ void TexturePackPanel::LoadTexture(wxInputStream& iStr, wxBitmap bitmap)
 		m_textureListBox->Append(texture->GetName());
 	}
 
-	m_textureListBox->Select(0);
-	wxCommandEvent evt;
-	OnTextureListBoxSelected(evt);
+	if (!m_texturePack->empty())
+	{
+		m_textureListBox->Select(0);
+		wxCommandEvent evt;
+		OnTextureListBoxSelected(evt);
+	}
 }
 
 void TexturePackPanel::OnTextureListBoxSelected( wxCommandEvent& event )
@@ -54,7 +58,7 @@ void TexturePackPanel::OnFrameSpinCtrlChanged(wxSpinEvent& event)
 void TexturePackPanel::UpdateFrameImage()
 {
 	const Texture& tex = m_texturePack->at(m_textureListBox->GetSelection());
-	if (tex.empty())
+	if (tex.empty() || !m_bitmap.IsOk())
 	{
 		m_frameBitmap->SetBitmap(wxNullBitmap);
 		return;
