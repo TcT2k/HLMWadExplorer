@@ -17,6 +17,8 @@
 #include <wx/aboutdlg.h>
 #include <wx/textdlg.h>
 #include <wx/config.h>
+#include <wx/persist.h>
+#include <wx/persist/toplevel.h>
 #if defined(__WXMSW__)
 #include <wx/msw/registry.h>
 #endif
@@ -89,6 +91,8 @@ ExploreFrame::ExploreFrame( wxWindow* parent ):
 	m_previewBookCtrl->AddPage(new TexturePackPanel(m_previewBookCtrl), "Texture", false);
 
 	Bind(wxEVT_MENU, &ExploreFrame::OnRecentFileClicked, this, wxID_FILE1, wxID_FILE9);
+
+	wxPersistenceManager::Get().RegisterAndRestore(this);
 }
 
 void ExploreFrame::OnAboutClicked( wxCommandEvent& event )
