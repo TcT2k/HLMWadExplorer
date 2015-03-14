@@ -19,6 +19,7 @@
 #if defined(__WXMSW__)
 #include <wx/msw/registry.h>
 #endif
+#include "TexturePack.h"
 
 class FileDataModel : public wxDataViewVirtualListModel
 {
@@ -320,9 +321,10 @@ void ExploreFrame::OnFileListSelectionChanged( wxDataViewEvent& event )
 	wxLogDebug("Selected: %s", entry.GetFileName());
 
 	wxFileName fn(entry.GetFileName(), wxPATH_UNIX);
+	wxString fileExt = fn.GetExt();
 
-	if (fn.GetExt().IsSameAs("png", false) ||
-		fn.GetExt().IsSameAs("jpg", false))
+	if (fileExt.IsSameAs("png", false) ||
+		fileExt.IsSameAs("jpg", false))
 	{
 		// Load preview picture
 		wxMemoryOutputStream oStr;
@@ -333,7 +335,19 @@ void ExploreFrame::OnFileListSelectionChanged( wxDataViewEvent& event )
 		wxImage img(iStr);
 		m_previewBitmap->SetBitmap(wxBitmap(img));
 		m_previewPanel->Layout();
-	} else
+	}
+	else if (fileExt.IsSameAs("meta", false))
+	{
+		// Load texture pack
+		wxMemoryOutputStream oStr;
+		m_archive->Extract(entry, oStr);
+		wxStreamBuffer* buffer = oStr.GetOutputStreamBuffer();
+		wxMemoryInputStream iStr(buffer->GetBufferStart(), buffer->GetBufferSize());
+
+		TexturePack texPack(iStr);
+
+	} 
+	else
 		m_previewBitmap->SetBitmap(wxNullBitmap);
 }
 
