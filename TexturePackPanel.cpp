@@ -52,7 +52,7 @@ void TexturePackPanel::OnFrameSpinCtrlChanged( wxSpinEvent& event )
 	wxBitmap frameBmp(frame.GetSize(), m_bitmap.GetDepth());
 	wxMemoryDC dstDC;
 	dstDC.SelectObject(frameBmp);
-	dstDC.SetBrush(*wxWHITE_BRUSH);
+	dstDC.SetBrush(wxBrush(m_colourPicker->GetColour()));
 	dstDC.DrawRectangle(wxPoint(0, 0), frame.GetSize());
 
 	wxSharedPtr<wxGraphicsContext> dstGC(wxGraphicsContext::Create(dstDC));
@@ -68,6 +68,12 @@ void TexturePackPanel::OnFrameSpinCtrlChanged( wxSpinEvent& event )
 }
 
 void TexturePackPanel::OnFrameSpinCtrlEnterPressed( wxCommandEvent& event )
+{
+	wxSpinEvent evt;
+	OnFrameSpinCtrlChanged(evt);
+}
+
+void TexturePackPanel::OnColourPickerChanged(wxColourPickerEvent& event)
 {
 	wxSpinEvent evt;
 	OnFrameSpinCtrlChanged(evt);

@@ -29,6 +29,7 @@
 #include <wx/listbox.h>
 #include <wx/stattext.h>
 #include <wx/spinctrl.h>
+#include <wx/clrpicker.h>
 #include <wx/statbmp.h>
 
 ///////////////////////////////////////////////////////////////////////////
@@ -99,6 +100,8 @@ class BaseTexturePackPanel : public wxPanel
 		wxPanel* m_panel4;
 		wxStaticText* m_staticText1;
 		wxSpinCtrl* m_frameSpinCtrl;
+		wxStaticText* m_staticText2;
+		wxColourPickerCtrl* m_colourPicker;
 		wxPanel* m_framePanel;
 		wxStaticBitmap* m_frameBitmap;
 		
@@ -106,6 +109,7 @@ class BaseTexturePackPanel : public wxPanel
 		virtual void OnTextureListBoxSelected( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnFrameSpinCtrlChanged( wxSpinEvent& event ) { event.Skip(); }
 		virtual void OnFrameSpinCtrlEnterPressed( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnColourPickerChanged( wxColourPickerEvent& event ) { event.Skip(); }
 		
 	
 	public:

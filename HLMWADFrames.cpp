@@ -175,6 +175,13 @@ BaseTexturePackPanel::BaseTexturePackPanel( wxWindow* parent, wxWindowID id, con
 	m_frameSpinCtrl = new wxSpinCtrl( m_panel4, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxSP_WRAP|wxTE_PROCESS_ENTER, 0, 10, 0 );
 	bSizer7->Add( m_frameSpinCtrl, 0, wxALL, 5 );
 	
+	m_staticText2 = new wxStaticText( m_panel4, wxID_ANY, _("Background:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText2->Wrap( -1 );
+	bSizer7->Add( m_staticText2, 0, wxALIGN_CENTER|wxALL, 5 );
+	
+	m_colourPicker = new wxColourPickerCtrl( m_panel4, wxID_ANY, wxColour( 255, 255, 255 ), wxDefaultPosition, wxDefaultSize, wxCLRP_DEFAULT_STYLE );
+	bSizer7->Add( m_colourPicker, 0, wxALL, 5 );
+	
 	
 	bSizer6->Add( bSizer7, 0, wxEXPAND, 5 );
 	
@@ -206,6 +213,7 @@ BaseTexturePackPanel::BaseTexturePackPanel( wxWindow* parent, wxWindowID id, con
 	m_textureListBox->Connect( wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler( BaseTexturePackPanel::OnTextureListBoxSelected ), NULL, this );
 	m_frameSpinCtrl->Connect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( BaseTexturePackPanel::OnFrameSpinCtrlChanged ), NULL, this );
 	m_frameSpinCtrl->Connect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( BaseTexturePackPanel::OnFrameSpinCtrlEnterPressed ), NULL, this );
+	m_colourPicker->Connect( wxEVT_COMMAND_COLOURPICKER_CHANGED, wxColourPickerEventHandler( BaseTexturePackPanel::OnColourPickerChanged ), NULL, this );
 }
 
 BaseTexturePackPanel::~BaseTexturePackPanel()
@@ -214,6 +222,7 @@ BaseTexturePackPanel::~BaseTexturePackPanel()
 	m_textureListBox->Disconnect( wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler( BaseTexturePackPanel::OnTextureListBoxSelected ), NULL, this );
 	m_frameSpinCtrl->Disconnect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( BaseTexturePackPanel::OnFrameSpinCtrlChanged ), NULL, this );
 	m_frameSpinCtrl->Disconnect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( BaseTexturePackPanel::OnFrameSpinCtrlEnterPressed ), NULL, this );
+	m_colourPicker->Disconnect( wxEVT_COMMAND_COLOURPICKER_CHANGED, wxColourPickerEventHandler( BaseTexturePackPanel::OnColourPickerChanged ), NULL, this );
 	
 }
 
