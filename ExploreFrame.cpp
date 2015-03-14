@@ -19,6 +19,7 @@
 #include <wx/config.h>
 #include <wx/persist.h>
 #include <wx/persist/toplevel.h>
+#include <wx/msgdlg.h>
 #if defined(__WXMSW__)
 #include <wx/msw/registry.h>
 #endif
@@ -29,8 +30,9 @@
 class FileDataModel : public wxDataViewVirtualListModel
 {
 public:
-	FileDataModel(WADArchive* archive):
+	FileDataModel(ExploreFrame* frame, WADArchive* archive) :
 		wxDataViewVirtualListModel(archive->GetEntryCount()),
+		m_frame(frame),
 		m_archive(archive)
 	{
 
@@ -38,13 +40,16 @@ public:
 
 	virtual unsigned int GetColumnCount() const
 	{
-		return 2;
+		return 3;
 	}
 
 	// return type as reported by wxVariant
 	virtual wxString GetColumnType(unsigned int col) const
 	{
-		return wxString();
+		if (col == 0)
+			return "bool";
+		else
+			return wxString();
 	}
 
 	void GetValueByRow(wxVariant &variant, unsigned int row, unsigned int col) const
@@ -53,9 +58,12 @@ public:
 		switch (col)
 		{
 			case 0:
-				variant = entry.GetFileName();
+				variant = m_frame->m_patchEntries.find(row) != m_frame->m_patchEntries.end();
 				break;
 			case 1:
+				variant = entry.GetFileName();
+				break;
+			case 2:
 				variant = wxFileName::GetHumanReadableSize(entry.GetSize());
 				break;
 		}
@@ -64,10 +72,21 @@ public:
 
 	bool SetValueByRow(const wxVariant &variant, unsigned int row, unsigned int col)
 	{
-		return false;
+		if (col == 0)
+		{
+			if (variant.GetBool())
+				m_frame->m_patchEntries.insert(row);
+			else
+				m_frame->m_patchEntries.erase(row);
+			m_frame->m_menubar->Enable(ID_PATCH_CREATE, !m_frame->m_patchEntries.empty());
+
+			return true;
+		} else
+			return false;
 	}
 
 private:
+	ExploreFrame* m_frame;
 	WADArchive* m_archive;
 };
 
@@ -80,8 +99,13 @@ ExploreFrame::ExploreFrame( wxWindow* parent ):
 	m_menubar->Enable(ID_EXTRACT, false);
 	m_menubar->Enable(wxID_SAVE, false);
 	m_menubar->Enable(wxID_SAVEAS, false);
+	m_menubar->Enable(ID_PATCH_APPLY, false);
+	m_menubar->Enable(ID_PATCH_PREPARE, false);
+	m_menubar->Enable(ID_PATCH_CREATE, false);
 	m_fileListNameColumn->SetWidth(150);
 	m_fileListSizeColumn->SetAlignment(wxALIGN_RIGHT);
+	m_fileListToggleColumn->SetWidth(24);
+	m_fileListToggleColumn->SetHidden(true);
 
 	m_fileHistory.UseMenu(m_fileMenu);
 	m_fileHistory.Load(*wxConfigBase::Get());
@@ -89,6 +113,8 @@ ExploreFrame::ExploreFrame( wxWindow* parent ):
 	m_previewBookCtrl->AddPage(new wxPanel(m_previewBookCtrl), "General", true);
 	m_previewBookCtrl->AddPage(new ImagePanel(m_previewBookCtrl), "Image", true);
 	m_previewBookCtrl->AddPage(new TexturePackPanel(m_previewBookCtrl), "Texture", false);
+
+	m_preparingPatch = false;
 
 	Bind(wxEVT_MENU, &ExploreFrame::OnRecentFileClicked, this, wxID_FILE1, wxID_FILE9);
 
@@ -162,12 +188,14 @@ void ExploreFrame::OnOpenClicked( wxCommandEvent& event )
 void ExploreFrame::OpenFile(const wxString& filename)
 {
 	m_archive = new WADArchive(filename);
-	wxObjectDataPtr<FileDataModel> model(new FileDataModel(m_archive.get()));
+	wxObjectDataPtr<FileDataModel> model(new FileDataModel(this, m_archive.get()));
 	m_fileListCtrl->AssociateModel(model.get());
 	m_menubar->Enable(ID_EXTRACT, true);
 	m_menubar->Enable(wxID_ADD, true);
 	m_menubar->Enable(wxID_SAVE, true);
 	m_menubar->Enable(wxID_SAVEAS, true);
+	m_menubar->Enable(ID_PATCH_APPLY, true);
+	m_menubar->Enable(ID_PATCH_PREPARE, true);
 #if defined(__WXOSX__)
 	OSXSetModified(false);
 #endif
@@ -382,4 +410,93 @@ void ExploreFrame::OnFileListSelectionChanged( wxDataViewEvent& event )
 void ExploreFrame::OnFileListDoubleClick( wxMouseEvent& event )
 {
 // TODO: Implement OnFileListDoubleClick
+}
+
+void ExploreFrame::OnPatchApplyClicked(wxCommandEvent& event)
+{
+	wxString patchFolder = wxStandardPaths::Get().GetDocumentsDir();
+	wxFileDialog fileDlg(this, _("Select patch wad to apply"), patchFolder, wxString(),
+		"*.patchwad", wxFD_DEFAULT_STYLE | wxFD_FILE_MUST_EXIST);
+	if (fileDlg.ShowModal() == wxID_OK)
+	{
+		WADArchive patchArchive(fileDlg.GetPath());
+
+		wxMessageDialog msgDlg(this, wxString::Format(_("Applying patch\n\nThis patch contains %d new/modified files.\nAre you sure you want to apply this patch?"),
+			patchArchive.GetEntryCount()), _("Warning"),
+			wxICON_WARNING | wxOK | wxCANCEL | wxCANCEL_DEFAULT);
+		msgDlg.SetOKLabel(_("Patch"));
+
+		if (msgDlg.ShowModal() == wxID_OK)
+		{
+			wxBusyCursor busyCursor;
+			wxBusyInfo busyInfo("Applying patch...");
+
+			// Apply patch entries
+			for (size_t patchIndex = 0; patchIndex < patchArchive.GetEntryCount(); patchIndex++)
+			{
+				m_archive->Patch(patchArchive, patchArchive.GetEntry(patchIndex));
+			}
+
+			wxString fileName = m_archive->GetFileName();
+
+			// Save archive
+			m_archive->Save();
+
+			// Reopen archive
+			OpenFile(fileName);
+
+			wxLogInfo(_("Patch applied"));
+		}
+	}
+}
+
+void ExploreFrame::OnPatchPrepareClicked(wxCommandEvent& event)
+{
+	if (m_preparingPatch)
+	{
+		m_fileListToggleColumn->SetHidden(true);
+		m_menubar->Check(ID_PATCH_PREPARE, false);
+		m_preparingPatch = false;
+		m_patchEntries.clear();
+		m_menubar->Enable(ID_PATCH_CREATE, false);
+	} else {
+		m_fileListToggleColumn->SetHidden(false);
+		m_menubar->Check(ID_PATCH_PREPARE, true);
+		m_preparingPatch = true;
+	}
+}
+
+void ExploreFrame::OnPatchCreateClicked(wxCommandEvent& event)
+{
+	wxString patchFolder = wxStandardPaths::Get().GetDocumentsDir();
+	wxFileDialog fileDlg(this, _("Select output for patch file"), patchFolder, wxString(),
+		"*.patchwad", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+	if (fileDlg.ShowModal() == wxID_OK)
+	{
+		{
+			wxBusyCursor busyCursor;
+			wxBusyInfo busyInfo("Writing patch file...");
+
+			WADArchive patchArchive(fileDlg.GetPath(), true);
+
+			for (auto it = m_patchEntries.begin(); it != m_patchEntries.end(); ++it)
+			{
+				patchArchive.Add(WADArchiveEntry(m_archive->GetEntry(*it), m_archive.get()));
+			}
+			patchArchive.Save();
+		}
+
+		OnPatchPrepareClicked(event);
+
+		wxMessageDialog msgDlg(this, wxString::Format(_("Patch saved to %s"), fileDlg.GetPath()), _("Information"), wxICON_INFORMATION | wxYES_NO);
+		msgDlg.SetYesNoLabels(_("Open Folder"), wxID_CLOSE);
+
+		if (msgDlg.ShowModal() == wxID_YES)
+		{
+			wxFileName folderFN(fileDlg.GetPath());
+			folderFN.SetFullName(wxString());
+
+			wxLaunchDefaultApplication(folderFN.GetPath());
+		}
+	}
 }

@@ -11,11 +11,12 @@
 #include <wx/wfstream.h>
 #include <wx/mstream.h>
 
-WADArchive::WADArchive(const wxString& fileName):
+WADArchive::WADArchive(const wxString& fileName, bool createFile) :
 	m_fileName(fileName),
 	m_modified(false)
 {
-	ParseFile();
+	if (!createFile)
+		ParseFile();
 }
 
 void WADArchive::ParseFile()
@@ -65,11 +66,19 @@ bool WADArchive::Extract(const WADArchiveEntry& entry, wxOutputStream& oStr)
 {
 	wxString inputFileName = entry.GetSourceFileName();
 	if (inputFileName.empty())
-		inputFileName = m_fileName;
+	{
+		if (entry.GetSourceArchive())
+			inputFileName = entry.GetSourceArchive()->GetFileName();
+		else
+			inputFileName = m_fileName;
+	}
 	
 	wxFileInputStream iStr(inputFileName);
 	if (entry.GetSourceFileName().empty())
-		iStr.SeekI(m_dataOffset + entry.GetOffset());
+	{
+		wxFileOffset archiveOffset = (entry.GetSourceArchive()) ? entry.GetSourceArchive()->m_dataOffset : m_dataOffset;
+		iStr.SeekI(archiveOffset + entry.GetOffset());
+	}
 
 	static int MAX_BUFFER_SIZE = 32 * 1024;
 	char* buffer = new char[MAX_BUFFER_SIZE];
@@ -186,4 +195,19 @@ void WADArchive::Replace(size_t itemIndex, const wxString& sourceFileName)
 {
 	m_entries[itemIndex].SetSourceFileName(sourceFileName);
 	m_modified = true;
+}
+
+void WADArchive::Patch(const WADArchive& patchArchive, const WADArchiveEntry& patchEntry)
+{
+	// find existing entry
+	for (auto entry = m_entries.begin(); entry != m_entries.end(); ++entry)
+	{
+		if (entry->GetFileName().IsSameAs(patchEntry.GetFileName()))
+		{
+			*entry = WADArchiveEntry(patchEntry, &patchArchive);
+			return;
+		}
+	}
+
+	m_entries.push_back(WADArchiveEntry(patchEntry, &patchArchive));
 }

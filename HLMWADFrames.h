@@ -36,6 +36,9 @@
 
 #define ID_EXTRACT 1000
 #define ID_REPLACE 1001
+#define ID_PATCH_APPLY 1002
+#define ID_PATCH_PREPARE 1003
+#define ID_PATCH_CREATE 1004
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Class BaseExploreFrame
@@ -48,10 +51,12 @@ class BaseExploreFrame : public wxFrame
 		wxMenuBar* m_menubar;
 		wxMenu* m_fileMenu;
 		wxMenu* resource;
+		wxMenu* m_patchMenu;
 		wxMenu* help;
 		wxSplitterWindow* m_mainSplitter;
 		wxPanel* m_listPanel;
 		wxDataViewListCtrl* m_fileListCtrl;
+		wxDataViewColumn* m_fileListToggleColumn;
 		wxDataViewColumn* m_fileListNameColumn;
 		wxDataViewColumn* m_fileListSizeColumn;
 		wxPanel* m_previewPanel;
@@ -67,6 +72,9 @@ class BaseExploreFrame : public wxFrame
 		virtual void OnReplaceClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnAddClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnDeleteClicked( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnPatchApplyClicked( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnPatchPrepareClicked( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnPatchCreateClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnAboutClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnFileListSelectionChanged( wxDataViewEvent& event ) { event.Skip(); }
 		virtual void OnFileListDoubleClick( wxMouseEvent& event ) { event.Skip(); }
@@ -80,7 +88,7 @@ class BaseExploreFrame : public wxFrame
 		
 		void m_mainSplitterOnIdle( wxIdleEvent& )
 		{
-			m_mainSplitter->SetSashPosition( 260 );
+			m_mainSplitter->SetSashPosition( 300 );
 			m_mainSplitter->Disconnect( wxEVT_IDLE, wxIdleEventHandler( BaseExploreFrame::m_mainSplitterOnIdle ), NULL, this );
 		}
 	

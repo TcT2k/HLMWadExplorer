@@ -61,6 +61,23 @@ BaseExploreFrame::BaseExploreFrame( wxWindow* parent, wxWindowID id, const wxStr
 	
 	m_menubar->Append( resource, _("&Resource") ); 
 	
+	m_patchMenu = new wxMenu();
+	wxMenuItem* apply;
+	apply = new wxMenuItem( m_patchMenu, ID_PATCH_APPLY, wxString( _("&Apply...") ) , wxEmptyString, wxITEM_NORMAL );
+	m_patchMenu->Append( apply );
+	
+	m_patchMenu->AppendSeparator();
+	
+	wxMenuItem* prepare;
+	prepare = new wxMenuItem( m_patchMenu, ID_PATCH_PREPARE, wxString( _("&Prepare") ) , wxEmptyString, wxITEM_CHECK );
+	m_patchMenu->Append( prepare );
+	
+	wxMenuItem* create;
+	create = new wxMenuItem( m_patchMenu, ID_PATCH_CREATE, wxString( _("&Create...") ) , wxEmptyString, wxITEM_NORMAL );
+	m_patchMenu->Append( create );
+	
+	m_menubar->Append( m_patchMenu, _("&Patch") ); 
+	
 	help = new wxMenu();
 	wxMenuItem* about;
 	about = new wxMenuItem( help, wxID_ABOUT, wxString( wxEmptyString ) , wxEmptyString, wxITEM_NORMAL );
@@ -81,6 +98,7 @@ BaseExploreFrame::BaseExploreFrame( wxWindow* parent, wxWindowID id, const wxStr
 	bSizer3 = new wxBoxSizer( wxVERTICAL );
 	
 	m_fileListCtrl = new wxDataViewListCtrl( m_listPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE );
+	m_fileListToggleColumn = m_fileListCtrl->AppendToggleColumn( _("Patch") ); 
 	m_fileListNameColumn = m_fileListCtrl->AppendTextColumn( _("Name") ); 
 	m_fileListSizeColumn = m_fileListCtrl->AppendTextColumn( _("Size") ); 
 	bSizer3->Add( m_fileListCtrl, 1, wxEXPAND, 5 );
@@ -100,7 +118,7 @@ BaseExploreFrame::BaseExploreFrame( wxWindow* parent, wxWindowID id, const wxStr
 	m_previewPanel->SetSizer( bSizer4 );
 	m_previewPanel->Layout();
 	bSizer4->Fit( m_previewPanel );
-	m_mainSplitter->SplitVertically( m_listPanel, m_previewPanel, 260 );
+	m_mainSplitter->SplitVertically( m_listPanel, m_previewPanel, 300 );
 	bSizer2->Add( m_mainSplitter, 1, wxEXPAND, 5 );
 	
 	
@@ -119,6 +137,9 @@ BaseExploreFrame::BaseExploreFrame( wxWindow* parent, wxWindowID id, const wxStr
 	this->Connect( replace->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnReplaceClicked ) );
 	this->Connect( add->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnAddClicked ) );
 	this->Connect( deleteMenuItem->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnDeleteClicked ) );
+	this->Connect( apply->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnPatchApplyClicked ) );
+	this->Connect( prepare->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnPatchPrepareClicked ) );
+	this->Connect( create->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnPatchCreateClicked ) );
 	this->Connect( about->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnAboutClicked ) );
 	this->Connect( wxID_ANY, wxEVT_COMMAND_DATAVIEW_SELECTION_CHANGED, wxDataViewEventHandler( BaseExploreFrame::OnFileListSelectionChanged ) );
 	m_fileListCtrl->Connect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( BaseExploreFrame::OnFileListDoubleClick ), NULL, this );
@@ -136,6 +157,9 @@ BaseExploreFrame::~BaseExploreFrame()
 	this->Disconnect( ID_REPLACE, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnReplaceClicked ) );
 	this->Disconnect( wxID_ADD, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnAddClicked ) );
 	this->Disconnect( wxID_DELETE, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnDeleteClicked ) );
+	this->Disconnect( ID_PATCH_APPLY, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnPatchApplyClicked ) );
+	this->Disconnect( ID_PATCH_PREPARE, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnPatchPrepareClicked ) );
+	this->Disconnect( ID_PATCH_CREATE, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnPatchCreateClicked ) );
 	this->Disconnect( wxID_ABOUT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnAboutClicked ) );
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_DATAVIEW_SELECTION_CHANGED, wxDataViewEventHandler( BaseExploreFrame::OnFileListSelectionChanged ) );
 	m_fileListCtrl->Disconnect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( BaseExploreFrame::OnFileListDoubleClick ), NULL, this );

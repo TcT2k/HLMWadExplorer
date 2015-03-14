@@ -11,19 +11,32 @@
 #include <wx/vector.h>
 #include <wx/filename.h>
 
+class WADArchive;
+
 class WADArchiveEntry
 {
 public:
 	WADArchiveEntry(const wxString& fileName, wxInt64 size, wxInt64 offset):
 		m_fileName(fileName),
 		m_size(size),
-		m_offset(offset)
+		m_offset(offset),
+		m_sourceArchive(NULL)
+	{
+
+	}
+
+	WADArchiveEntry(const WADArchiveEntry& entry, const WADArchive* sourceArchive):
+		m_fileName(entry.GetFileName()),
+		m_size(entry.GetSize()),
+		m_offset(entry.GetOffset()),
+		m_sourceArchive(sourceArchive)
 	{
 
 	}
 	
 	WADArchiveEntry(const wxString& fileName, const wxString& sourceFileName):
-		m_fileName(fileName)
+		m_fileName(fileName),
+		m_sourceArchive(NULL)
 	{
 		SetSourceFileName(sourceFileName);
 	}
@@ -54,18 +67,24 @@ public:
 		m_offset = 0;
 		m_size = wxFileName::GetSize(value).ToULong();
 	}
+	
+	const WADArchive* GetSourceArchive() const
+	{
+		return m_sourceArchive;
+	}
 
 private:
 	wxString m_fileName;
 	wxInt64 m_size;
 	wxInt64 m_offset;
 	wxString m_sourceFileName;
+	const WADArchive* m_sourceArchive;
 };
 
 class WADArchive
 {
 public:
-	WADArchive(const wxString& fileName);
+	WADArchive(const wxString& fileName, bool createFile = false);
 
 	size_t GetEntryCount() const
 	{
@@ -89,6 +108,8 @@ public:
 	void Add(const WADArchiveEntry& entry);
 	
 	void Replace(size_t itemIndex, const wxString& sourceFileName);
+
+	void Patch(const WADArchive& patchArchive, const WADArchiveEntry& patchEntry);
 
 	bool Extract(const WADArchiveEntry& entry, const wxString& targetFileName);
 
