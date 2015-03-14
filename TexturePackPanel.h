@@ -22,7 +22,8 @@ class TexturePackPanel : public BaseTexturePackPanel
 		void OnFrameSpinCtrlChanged( wxSpinEvent& event );
 		void OnFrameSpinCtrlEnterPressed( wxCommandEvent& event );
 		void OnColourPickerChanged(wxColourPickerEvent& event);
-	public:
+		void OnZoomSpinCtrlChanged(wxSpinEvent& event);
+public:
 		/** Constructor */
 		TexturePackPanel( wxWindow* parent );
 	//// end generated class members
@@ -33,6 +34,8 @@ class TexturePackPanel : public BaseTexturePackPanel
 		wxBitmap m_bitmap;
 		wxGraphicsBitmap m_drawBitmap;
 		wxSharedPtr<TexturePack> m_texturePack;
+
+		void UpdateFrameImage();
 };
 
 #endif // __TexturePackPanel__

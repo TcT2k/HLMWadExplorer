@@ -38,7 +38,12 @@ void TexturePackPanel::OnTextureListBoxSelected( wxCommandEvent& event )
 	OnFrameSpinCtrlChanged(evt);
 }
 
-void TexturePackPanel::OnFrameSpinCtrlChanged( wxSpinEvent& event )
+void TexturePackPanel::OnFrameSpinCtrlChanged(wxSpinEvent& event)
+{
+	UpdateFrameImage();
+}
+
+void TexturePackPanel::UpdateFrameImage()
 {
 	const Texture& tex = m_texturePack->at(m_textureListBox->GetSelection());
 	if (tex.empty())
@@ -49,15 +54,19 @@ void TexturePackPanel::OnFrameSpinCtrlChanged( wxSpinEvent& event )
 
 	const Frame& frame = tex.at(m_frameSpinCtrl->GetValue());
 
-	wxBitmap frameBmp(frame.GetSize(), m_bitmap.GetDepth());
+	wxSize imgSize = frame.GetSize();
+	imgSize *= m_zoomSpinCtrl->GetValue();
+
+	wxBitmap frameBmp(imgSize, m_bitmap.GetDepth());
 	wxMemoryDC dstDC;
 	dstDC.SelectObject(frameBmp);
 	dstDC.SetBrush(wxBrush(m_colourPicker->GetColour()));
-	dstDC.DrawRectangle(wxPoint(0, 0), frame.GetSize());
+	dstDC.DrawRectangle(wxPoint(0, 0), imgSize);
 
 	wxSharedPtr<wxGraphicsContext> dstGC(wxGraphicsContext::Create(dstDC));
-	wxGraphicsBitmap srcSubBmp = dstGC->CreateSubBitmap(m_drawBitmap, frame.GetOffset().x, frame.GetOffset().y, frameBmp.GetSize().GetWidth(), frameBmp.GetSize().GetHeight());
-	dstGC->DrawBitmap(srcSubBmp, 0, 0, frame.GetSize().GetWidth(), frame.GetSize().GetHeight());
+	dstGC->SetAntialiasMode(wxANTIALIAS_NONE);
+	wxGraphicsBitmap srcSubBmp = dstGC->CreateSubBitmap(m_drawBitmap, frame.GetOffset().x, frame.GetOffset().y, frame.GetSize().GetWidth(), frame.GetSize().GetHeight());
+	dstGC->DrawBitmap(srcSubBmp, 0, 0, imgSize.GetWidth(), imgSize.GetHeight());
 	dstGC.reset();
 
 	dstDC.SelectObject(wxNullBitmap);
@@ -69,12 +78,15 @@ void TexturePackPanel::OnFrameSpinCtrlChanged( wxSpinEvent& event )
 
 void TexturePackPanel::OnFrameSpinCtrlEnterPressed( wxCommandEvent& event )
 {
-	wxSpinEvent evt;
-	OnFrameSpinCtrlChanged(evt);
+	UpdateFrameImage();
 }
 
 void TexturePackPanel::OnColourPickerChanged(wxColourPickerEvent& event)
 {
-	wxSpinEvent evt;
-	OnFrameSpinCtrlChanged(evt);
+	UpdateFrameImage();
+}
+
+void TexturePackPanel::OnZoomSpinCtrlChanged(wxSpinEvent& event)
+{
+	UpdateFrameImage();
 }

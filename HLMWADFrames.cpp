@@ -198,6 +198,19 @@ BaseTexturePackPanel::BaseTexturePackPanel( wxWindow* parent, wxWindowID id, con
 	bSizer11->Fit( m_framePanel );
 	bSizer6->Add( m_framePanel, 1, wxEXPAND | wxALL, 5 );
 	
+	wxBoxSizer* bSizer10;
+	bSizer10 = new wxBoxSizer( wxHORIZONTAL );
+	
+	m_staticText3 = new wxStaticText( m_panel4, wxID_ANY, _("Zoom:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText3->Wrap( -1 );
+	bSizer10->Add( m_staticText3, 0, wxALIGN_CENTER|wxALL, 5 );
+	
+	m_zoomSpinCtrl = new wxSpinCtrl( m_panel4, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 20, 1 );
+	bSizer10->Add( m_zoomSpinCtrl, 0, wxALL, 5 );
+	
+	
+	bSizer6->Add( bSizer10, 0, wxEXPAND, 5 );
+	
 	
 	m_panel4->SetSizer( bSizer6 );
 	m_panel4->Layout();
@@ -214,6 +227,7 @@ BaseTexturePackPanel::BaseTexturePackPanel( wxWindow* parent, wxWindowID id, con
 	m_frameSpinCtrl->Connect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( BaseTexturePackPanel::OnFrameSpinCtrlChanged ), NULL, this );
 	m_frameSpinCtrl->Connect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( BaseTexturePackPanel::OnFrameSpinCtrlEnterPressed ), NULL, this );
 	m_colourPicker->Connect( wxEVT_COMMAND_COLOURPICKER_CHANGED, wxColourPickerEventHandler( BaseTexturePackPanel::OnColourPickerChanged ), NULL, this );
+	m_zoomSpinCtrl->Connect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( BaseTexturePackPanel::OnZoomSpinCtrlChanged ), NULL, this );
 }
 
 BaseTexturePackPanel::~BaseTexturePackPanel()
@@ -223,6 +237,7 @@ BaseTexturePackPanel::~BaseTexturePackPanel()
 	m_frameSpinCtrl->Disconnect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( BaseTexturePackPanel::OnFrameSpinCtrlChanged ), NULL, this );
 	m_frameSpinCtrl->Disconnect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( BaseTexturePackPanel::OnFrameSpinCtrlEnterPressed ), NULL, this );
 	m_colourPicker->Disconnect( wxEVT_COMMAND_COLOURPICKER_CHANGED, wxColourPickerEventHandler( BaseTexturePackPanel::OnColourPickerChanged ), NULL, this );
+	m_zoomSpinCtrl->Disconnect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( BaseTexturePackPanel::OnZoomSpinCtrlChanged ), NULL, this );
 	
 }
 

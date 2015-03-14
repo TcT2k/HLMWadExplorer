@@ -104,12 +104,15 @@ class BaseTexturePackPanel : public wxPanel
 		wxColourPickerCtrl* m_colourPicker;
 		wxPanel* m_framePanel;
 		wxStaticBitmap* m_frameBitmap;
+		wxStaticText* m_staticText3;
+		wxSpinCtrl* m_zoomSpinCtrl;
 		
 		// Virtual event handlers, overide them in your derived class
 		virtual void OnTextureListBoxSelected( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnFrameSpinCtrlChanged( wxSpinEvent& event ) { event.Skip(); }
 		virtual void OnFrameSpinCtrlEnterPressed( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnColourPickerChanged( wxColourPickerEvent& event ) { event.Skip(); }
+		virtual void OnZoomSpinCtrlChanged( wxSpinEvent& event ) { event.Skip(); }
 		
 	
 	public:
