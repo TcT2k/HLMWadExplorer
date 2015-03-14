@@ -72,6 +72,7 @@ void Texture::Parse(wxInputStream& iStr)
 
 	wxUint32 frameCount;
 	iStr.Read(&frameCount, sizeof(frameCount));
+	reserve(frameCount);
 
 	for (wxUint32 frameIndex = 0; frameIndex < frameCount; frameIndex++)
 	{

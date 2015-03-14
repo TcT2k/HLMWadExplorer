@@ -16,12 +16,14 @@ void TexturePackPanel::LoadTexture(wxInputStream& iStr, wxBitmap bitmap)
 
 	m_texturePack = new TexturePack(iStr);
 
+	m_textureListBox->Freeze();
 	m_textureListBox->Clear();
 
 	for (auto texture = m_texturePack->begin(); texture != m_texturePack->end(); ++texture)
 	{
 		m_textureListBox->Append(texture->GetName());
 	}
+	m_textureListBox->Thaw();
 
 	if (!m_texturePack->empty())
 	{
