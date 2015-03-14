@@ -198,18 +198,36 @@ BaseTexturePackPanel::BaseTexturePackPanel( wxWindow* parent, wxWindowID id, con
 	bSizer11->Fit( m_framePanel );
 	bSizer6->Add( m_framePanel, 1, wxEXPAND | wxALL, 5 );
 	
-	wxBoxSizer* bSizer10;
-	bSizer10 = new wxBoxSizer( wxHORIZONTAL );
+	m_infoSizer = new wxBoxSizer( wxHORIZONTAL );
 	
 	m_staticText3 = new wxStaticText( m_panel4, wxID_ANY, _("Zoom:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText3->Wrap( -1 );
-	bSizer10->Add( m_staticText3, 0, wxALIGN_CENTER|wxALL, 5 );
+	m_infoSizer->Add( m_staticText3, 0, wxALIGN_CENTER|wxALL, 5 );
 	
 	m_zoomSpinCtrl = new wxSpinCtrl( m_panel4, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 20, 1 );
-	bSizer10->Add( m_zoomSpinCtrl, 0, wxALL, 5 );
+	m_infoSizer->Add( m_zoomSpinCtrl, 0, wxALL, 5 );
 	
 	
-	bSizer6->Add( bSizer10, 0, wxEXPAND, 5 );
+	m_infoSizer->Add( 0, 0, 1, wxEXPAND, 5 );
+	
+	m_staticText4 = new wxStaticText( m_panel4, wxID_ANY, _("Size:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText4->Wrap( -1 );
+	m_infoSizer->Add( m_staticText4, 0, wxALIGN_CENTER|wxALL, 5 );
+	
+	m_sizeStaticText = new wxStaticText( m_panel4, wxID_ANY, _("-"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_sizeStaticText->Wrap( -1 );
+	m_infoSizer->Add( m_sizeStaticText, 0, wxALIGN_CENTER|wxALL, 5 );
+	
+	m_staticText41 = new wxStaticText( m_panel4, wxID_ANY, _("Offset:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText41->Wrap( -1 );
+	m_infoSizer->Add( m_staticText41, 0, wxALIGN_CENTER|wxALL, 5 );
+	
+	m_offsetStaticText = new wxStaticText( m_panel4, wxID_ANY, _("-"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_offsetStaticText->Wrap( -1 );
+	m_infoSizer->Add( m_offsetStaticText, 0, wxALIGN_CENTER|wxALL, 5 );
+	
+	
+	bSizer6->Add( m_infoSizer, 0, wxEXPAND, 5 );
 	
 	
 	m_panel4->SetSizer( bSizer6 );

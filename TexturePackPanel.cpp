@@ -41,6 +41,14 @@ void TexturePackPanel::OnTextureListBoxSelected( wxCommandEvent& event )
 void TexturePackPanel::OnFrameSpinCtrlChanged(wxSpinEvent& event)
 {
 	UpdateFrameImage();
+
+	const Texture& tex = m_texturePack->at(m_textureListBox->GetSelection());
+	const Frame& frame = tex.at(m_frameSpinCtrl->GetValue());
+
+	m_sizeStaticText->SetLabel(wxString::Format("%dx%d", frame.GetSize().GetWidth(), frame.GetSize().GetHeight()));
+	m_offsetStaticText->SetLabel(wxString::Format("%d,%d", frame.GetOffset().x, frame.GetOffset().y));
+
+	m_infoSizer->Layout();
 }
 
 void TexturePackPanel::UpdateFrameImage()

@@ -104,8 +104,13 @@ class BaseTexturePackPanel : public wxPanel
 		wxColourPickerCtrl* m_colourPicker;
 		wxPanel* m_framePanel;
 		wxStaticBitmap* m_frameBitmap;
+		wxBoxSizer* m_infoSizer;
 		wxStaticText* m_staticText3;
 		wxSpinCtrl* m_zoomSpinCtrl;
+		wxStaticText* m_staticText4;
+		wxStaticText* m_sizeStaticText;
+		wxStaticText* m_staticText41;
+		wxStaticText* m_offsetStaticText;
 		
 		// Virtual event handlers, overide them in your derived class
 		virtual void OnTextureListBoxSelected( wxCommandEvent& event ) { event.Skip(); }
