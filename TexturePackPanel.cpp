@@ -10,6 +10,8 @@ BaseTexturePackPanel( parent )
 void TexturePackPanel::LoadTexture(wxInputStream& iStr, wxBitmap bitmap)
 {
 	m_bitmap = bitmap;
+	wxSharedPtr<wxGraphicsContext> dstGC(wxGraphicsContext::Create(this));
+	m_drawBitmap = dstGC->CreateBitmap(bitmap);
 
 	m_texturePack = new TexturePack(iStr);
 
@@ -47,16 +49,16 @@ void TexturePackPanel::OnFrameSpinCtrlChanged( wxSpinEvent& event )
 
 	const Frame& frame = tex.at(m_frameSpinCtrl->GetValue());
 
-	wxMemoryDC srcDC;
-	srcDC.SelectObject(m_bitmap);
-
 	wxBitmap frameBmp(frame.GetSize(), m_bitmap.GetDepth());
 	wxMemoryDC dstDC;
 	dstDC.SelectObject(frameBmp);
 	dstDC.SetBrush(*wxWHITE_BRUSH);
 	dstDC.DrawRectangle(wxPoint(0, 0), frame.GetSize());
 
-	dstDC.Blit(wxPoint(0, 0), frameBmp.GetSize(), &srcDC, frame.GetOffset());
+	wxSharedPtr<wxGraphicsContext> dstGC(wxGraphicsContext::Create(dstDC));
+	wxGraphicsBitmap srcSubBmp = dstGC->CreateSubBitmap(m_drawBitmap, frame.GetOffset().x, frame.GetOffset().y, frameBmp.GetSize().GetWidth(), frameBmp.GetSize().GetHeight());
+	dstGC->DrawBitmap(srcSubBmp, 0, 0, frame.GetSize().GetWidth(), frame.GetSize().GetHeight());
+	dstGC.reset();
 
 	dstDC.SelectObject(wxNullBitmap);
 
