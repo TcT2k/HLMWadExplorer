@@ -42,7 +42,10 @@ void TexturePack::Parse(wxInputStream& iStr)
 	// Read textures until file ends
 	while (!iStr.Eof())
 	{
-		push_back(Texture(this, iStr));
+		Texture tex(this, iStr);
+
+		if (!iStr.Eof())
+			push_back(tex);
 	}
 }
 

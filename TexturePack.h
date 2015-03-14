@@ -5,6 +5,8 @@
 **
 ** Licensed under GPL v3 or later
 */
+#ifndef TexturePack_H
+#define TexturePack_H
 
 #include <wx/wx.h>
 #include <wx/vector.h>
@@ -15,6 +17,16 @@ class Frame
 {
 public:
 	Frame(wxInputStream& iStr);
+
+	const wxPoint& GetOffset() const
+	{
+		return m_offset;
+	}
+
+	const wxSize& GetSize() const
+	{
+		return m_size;
+	}
 
 private:
 	wxPoint m_offset;
@@ -52,3 +64,5 @@ private:
 	void Parse(wxInputStream& iStr);
 
 };
+
+#endif // TexturePack_H

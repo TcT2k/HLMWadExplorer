@@ -76,12 +76,14 @@ public:
 	{
 		return m_entries[index];
 	}
-	
+
+	const WADArchiveEntry& GetEntry(const wxString& fileName) const;
+
 	const wxString& GetFileName() const
 	{
 		return m_fileName;
 	}
-	
+
 	void Remove(size_t itemIndex);
 	
 	void Add(const WADArchiveEntry& entry);
@@ -91,6 +93,8 @@ public:
 	bool Extract(const WADArchiveEntry& entry, const wxString& targetFileName);
 
 	bool Extract(const WADArchiveEntry& entry, wxOutputStream& oStr);
+
+	wxBitmap ExtractBitmap(const WADArchiveEntry& entry);
 	
 	bool Save();
 	

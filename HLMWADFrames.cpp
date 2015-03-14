@@ -93,14 +93,8 @@ BaseExploreFrame::BaseExploreFrame( wxWindow* parent, wxWindowID id, const wxStr
 	wxBoxSizer* bSizer4;
 	bSizer4 = new wxBoxSizer( wxVERTICAL );
 	
-	
-	bSizer4->Add( 0, 0, 1, wxEXPAND, 5 );
-	
-	m_previewBitmap = new wxStaticBitmap( m_previewPanel, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxDefaultSize, 0 );
-	bSizer4->Add( m_previewBitmap, 0, wxALIGN_CENTER, 5 );
-	
-	
-	bSizer4->Add( 0, 0, 1, wxEXPAND, 5 );
+	m_previewBookCtrl = new wxSimplebook(m_previewPanel, wxID_ANY);
+	bSizer4->Add( m_previewBookCtrl, 1, wxEXPAND, 5 );
 	
 	
 	m_previewPanel->SetSizer( bSizer4 );
@@ -146,4 +140,102 @@ BaseExploreFrame::~BaseExploreFrame()
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_DATAVIEW_SELECTION_CHANGED, wxDataViewEventHandler( BaseExploreFrame::OnFileListSelectionChanged ) );
 	m_fileListCtrl->Disconnect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( BaseExploreFrame::OnFileListDoubleClick ), NULL, this );
 	
+}
+
+BaseTexturePackPanel::BaseTexturePackPanel( wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style ) : wxPanel( parent, id, pos, size, style )
+{
+	wxBoxSizer* bSizer4;
+	bSizer4 = new wxBoxSizer( wxVERTICAL );
+	
+	m_splitter2 = new wxSplitterWindow( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_3D|wxSP_LIVE_UPDATE );
+	m_splitter2->Connect( wxEVT_IDLE, wxIdleEventHandler( BaseTexturePackPanel::m_splitter2OnIdle ), NULL, this );
+	
+	m_panel3 = new wxPanel( m_splitter2, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer5;
+	bSizer5 = new wxBoxSizer( wxVERTICAL );
+	
+	m_textureListBox = new wxListBox( m_panel3, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, 0 ); 
+	bSizer5->Add( m_textureListBox, 1, wxEXPAND, 5 );
+	
+	
+	m_panel3->SetSizer( bSizer5 );
+	m_panel3->Layout();
+	bSizer5->Fit( m_panel3 );
+	m_panel4 = new wxPanel( m_splitter2, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer6;
+	bSizer6 = new wxBoxSizer( wxVERTICAL );
+	
+	wxBoxSizer* bSizer7;
+	bSizer7 = new wxBoxSizer( wxHORIZONTAL );
+	
+	m_staticText1 = new wxStaticText( m_panel4, wxID_ANY, _("Frame:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText1->Wrap( -1 );
+	bSizer7->Add( m_staticText1, 0, wxALIGN_CENTER|wxALL, 5 );
+	
+	m_frameSpinCtrl = new wxSpinCtrl( m_panel4, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS|wxSP_WRAP|wxTE_PROCESS_ENTER, 0, 10, 0 );
+	bSizer7->Add( m_frameSpinCtrl, 0, wxALL, 5 );
+	
+	
+	bSizer6->Add( bSizer7, 0, wxEXPAND, 5 );
+	
+	m_framePanel = new wxPanel( m_panel4, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
+	wxBoxSizer* bSizer11;
+	bSizer11 = new wxBoxSizer( wxVERTICAL );
+	
+	m_frameBitmap = new wxStaticBitmap( m_framePanel, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer11->Add( m_frameBitmap, 0, wxALL, 5 );
+	
+	
+	m_framePanel->SetSizer( bSizer11 );
+	m_framePanel->Layout();
+	bSizer11->Fit( m_framePanel );
+	bSizer6->Add( m_framePanel, 1, wxEXPAND | wxALL, 5 );
+	
+	
+	m_panel4->SetSizer( bSizer6 );
+	m_panel4->Layout();
+	bSizer6->Fit( m_panel4 );
+	m_splitter2->SplitVertically( m_panel3, m_panel4, 180 );
+	bSizer4->Add( m_splitter2, 1, wxEXPAND, 5 );
+	
+	
+	this->SetSizer( bSizer4 );
+	this->Layout();
+	
+	// Connect Events
+	m_textureListBox->Connect( wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler( BaseTexturePackPanel::OnTextureListBoxSelected ), NULL, this );
+	m_frameSpinCtrl->Connect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( BaseTexturePackPanel::OnFrameSpinCtrlChanged ), NULL, this );
+	m_frameSpinCtrl->Connect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( BaseTexturePackPanel::OnFrameSpinCtrlEnterPressed ), NULL, this );
+}
+
+BaseTexturePackPanel::~BaseTexturePackPanel()
+{
+	// Disconnect Events
+	m_textureListBox->Disconnect( wxEVT_COMMAND_LISTBOX_SELECTED, wxCommandEventHandler( BaseTexturePackPanel::OnTextureListBoxSelected ), NULL, this );
+	m_frameSpinCtrl->Disconnect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( BaseTexturePackPanel::OnFrameSpinCtrlChanged ), NULL, this );
+	m_frameSpinCtrl->Disconnect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( BaseTexturePackPanel::OnFrameSpinCtrlEnterPressed ), NULL, this );
+	
+}
+
+ImagePanel::ImagePanel( wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style ) : wxPanel( parent, id, pos, size, style )
+{
+	wxBoxSizer* bSizer4;
+	bSizer4 = new wxBoxSizer( wxVERTICAL );
+	
+	
+	bSizer4->Add( 0, 0, 1, wxEXPAND, 5 );
+	
+	m_previewBitmap = new wxStaticBitmap( this, wxID_ANY, wxNullBitmap, wxDefaultPosition, wxDefaultSize, 0 );
+	bSizer4->Add( m_previewBitmap, 0, wxALIGN_CENTER, 5 );
+	
+	
+	bSizer4->Add( 0, 0, 1, wxEXPAND, 5 );
+	
+	
+	this->SetSizer( bSizer4 );
+	this->Layout();
+}
+
+ImagePanel::~ImagePanel()
+{
 }

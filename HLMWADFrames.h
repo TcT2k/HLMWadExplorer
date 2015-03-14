@@ -23,9 +23,13 @@
 #include <wx/dataview.h>
 #include <wx/sizer.h>
 #include <wx/panel.h>
-#include <wx/statbmp.h>
+#include <wx/simplebook.h>
 #include <wx/splitter.h>
 #include <wx/frame.h>
+#include <wx/listbox.h>
+#include <wx/stattext.h>
+#include <wx/spinctrl.h>
+#include <wx/statbmp.h>
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -50,7 +54,7 @@ class BaseExploreFrame : public wxFrame
 		wxDataViewColumn* m_fileListNameColumn;
 		wxDataViewColumn* m_fileListSizeColumn;
 		wxPanel* m_previewPanel;
-		wxStaticBitmap* m_previewBitmap;
+		wxSimplebook* m_previewBookCtrl;
 		
 		// Virtual event handlers, overide them in your derived class
 		virtual void OnWindowClose( wxCloseEvent& event ) { event.Skip(); }
@@ -78,6 +82,59 @@ class BaseExploreFrame : public wxFrame
 			m_mainSplitter->SetSashPosition( 260 );
 			m_mainSplitter->Disconnect( wxEVT_IDLE, wxIdleEventHandler( BaseExploreFrame::m_mainSplitterOnIdle ), NULL, this );
 		}
+	
+};
+
+///////////////////////////////////////////////////////////////////////////////
+/// Class BaseTexturePackPanel
+///////////////////////////////////////////////////////////////////////////////
+class BaseTexturePackPanel : public wxPanel 
+{
+	private:
+	
+	protected:
+		wxSplitterWindow* m_splitter2;
+		wxPanel* m_panel3;
+		wxListBox* m_textureListBox;
+		wxPanel* m_panel4;
+		wxStaticText* m_staticText1;
+		wxSpinCtrl* m_frameSpinCtrl;
+		wxPanel* m_framePanel;
+		wxStaticBitmap* m_frameBitmap;
+		
+		// Virtual event handlers, overide them in your derived class
+		virtual void OnTextureListBoxSelected( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnFrameSpinCtrlChanged( wxSpinEvent& event ) { event.Skip(); }
+		virtual void OnFrameSpinCtrlEnterPressed( wxCommandEvent& event ) { event.Skip(); }
+		
+	
+	public:
+		
+		BaseTexturePackPanel( wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 500,300 ), long style = wxTAB_TRAVERSAL ); 
+		~BaseTexturePackPanel();
+		
+		void m_splitter2OnIdle( wxIdleEvent& )
+		{
+			m_splitter2->SetSashPosition( 180 );
+			m_splitter2->Disconnect( wxEVT_IDLE, wxIdleEventHandler( BaseTexturePackPanel::m_splitter2OnIdle ), NULL, this );
+		}
+	
+};
+
+///////////////////////////////////////////////////////////////////////////////
+/// Class ImagePanel
+///////////////////////////////////////////////////////////////////////////////
+class ImagePanel : public wxPanel 
+{
+	private:
+	
+	protected:
+	
+	public:
+		wxStaticBitmap* m_previewBitmap;
+		
+		ImagePanel( wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 500,300 ), long style = wxTAB_TRAVERSAL ); 
+		~ImagePanel();
 	
 };
 

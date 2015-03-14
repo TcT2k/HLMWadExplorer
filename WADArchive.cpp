@@ -9,6 +9,7 @@
 #include "WADArchive.h"
 
 #include <wx/wfstream.h>
+#include <wx/mstream.h>
 
 WADArchive::WADArchive(const wxString& fileName):
 	m_fileName(fileName),
@@ -91,6 +92,22 @@ bool WADArchive::Extract(const WADArchiveEntry& entry, wxOutputStream& oStr)
 	return true;
 }
 
+wxBitmap WADArchive::ExtractBitmap(const WADArchiveEntry& entry)
+{
+	// Suppress image loading warnings
+	wxLogNull nullLog;
+
+	// Load preview picture
+	wxMemoryOutputStream oStr;
+	Extract(entry, oStr);
+
+	wxStreamBuffer* buffer = oStr.GetOutputStreamBuffer();
+	wxMemoryInputStream iStr(buffer->GetBufferStart(), buffer->GetBufferSize());
+	wxImage img(iStr);
+
+	return wxBitmap(img);
+}
+
 bool WADArchive::Save()
 {
 	return Save(m_fileName);
@@ -139,6 +156,18 @@ bool WADArchive::Save(const wxString& targetFileName)
 		return oStr.Commit();
 	else
 		return false;
+}
+
+const WADArchiveEntry& WADArchive::GetEntry(const wxString& fileName) const
+{
+	for (auto entry = m_entries.begin(); entry != m_entries.end(); ++entry)
+	{
+		if (entry->GetFileName().IsSameAs(fileName))
+			return *entry;
+	}
+
+	static WADArchiveEntry nullEntry("", 0, 0);
+	return nullEntry;
 }
 
 void WADArchive::Remove(size_t itemIndex)

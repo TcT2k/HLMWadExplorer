@@ -19,7 +19,9 @@
 #if defined(__WXMSW__)
 #include <wx/msw/registry.h>
 #endif
+
 #include "TexturePack.h"
+#include "TexturePackPanel.h"
 
 class FileDataModel : public wxDataViewVirtualListModel
 {
@@ -77,6 +79,10 @@ ExploreFrame::ExploreFrame( wxWindow* parent ):
 	m_menubar->Enable(wxID_SAVEAS, false);
 	m_fileListNameColumn->SetWidth(150);
 	m_fileListSizeColumn->SetAlignment(wxALIGN_RIGHT);
+
+	m_previewBookCtrl->AddPage(new wxPanel(m_previewBookCtrl), "General", true);
+	m_previewBookCtrl->AddPage(new ImagePanel(m_previewBookCtrl), "Image", true);
+	m_previewBookCtrl->AddPage(new TexturePackPanel(m_previewBookCtrl), "Texture", false);
 }
 
 void ExploreFrame::OnAboutClicked( wxCommandEvent& event )
@@ -326,29 +332,31 @@ void ExploreFrame::OnFileListSelectionChanged( wxDataViewEvent& event )
 	if (fileExt.IsSameAs("png", false) ||
 		fileExt.IsSameAs("jpg", false))
 	{
-		// Load preview picture
-		wxMemoryOutputStream oStr;
-		m_archive->Extract(entry, oStr);
+		m_previewBookCtrl->ChangeSelection(1);
 
-		wxStreamBuffer* buffer = oStr.GetOutputStreamBuffer();
-		wxMemoryInputStream iStr(buffer->GetBufferStart(), buffer->GetBufferSize());
-		wxImage img(iStr);
-		m_previewBitmap->SetBitmap(wxBitmap(img));
-		m_previewPanel->Layout();
+		ImagePanel* imgPanel = (ImagePanel*) m_previewBookCtrl->GetCurrentPage();
+		imgPanel->m_previewBitmap->SetBitmap(m_archive->ExtractBitmap(entry));
+		imgPanel->Layout();
 	}
 	else if (fileExt.IsSameAs("meta", false))
 	{
+		m_previewBookCtrl->ChangeSelection(2);
+
 		// Load texture pack
 		wxMemoryOutputStream oStr;
 		m_archive->Extract(entry, oStr);
 		wxStreamBuffer* buffer = oStr.GetOutputStreamBuffer();
 		wxMemoryInputStream iStr(buffer->GetBufferStart(), buffer->GetBufferSize());
 
-		TexturePack texPack(iStr);
+		wxFileName imageFN(entry.GetFileName(), wxPATH_UNIX);
+		imageFN.SetExt("png");
+		WADArchiveEntry imgEntry = m_archive->GetEntry(imageFN.GetFullPath(wxPATH_UNIX));
 
-	} 
+		TexturePackPanel* texPanel = (TexturePackPanel*)m_previewBookCtrl->GetCurrentPage();
+		texPanel->LoadTexture(iStr, m_archive->ExtractBitmap(imgEntry));
+	}
 	else
-		m_previewBitmap->SetBitmap(wxNullBitmap);
+		m_previewBookCtrl->ChangeSelection(0);
 }
 
 void ExploreFrame::OnFileListDoubleClick( wxMouseEvent& event )

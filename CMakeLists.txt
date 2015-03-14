@@ -17,6 +17,8 @@ set(SRCS ${SRCS}
 	WADArchive.h
 	TexturePack.h
 	TexturePack.cpp
+	TexturePackPanel.h
+	TexturePackPanel.cpp
 	)
 
 add_executable(HLMWADExplorer WIN32 MACOSX_BUNDLE ${SRCS})
