@@ -45,7 +45,7 @@ class BaseExploreFrame : public wxFrame
 	
 	protected:
 		wxMenuBar* m_menubar;
-		wxMenu* file;
+		wxMenu* m_fileMenu;
 		wxMenu* resource;
 		wxMenu* help;
 		wxSplitterWindow* m_mainSplitter;

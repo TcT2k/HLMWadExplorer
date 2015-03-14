@@ -135,7 +135,7 @@
                 <event name="OnUpdateUI"></event>
                 <object class="wxMenu" expanded="1">
                     <property name="label">&amp;File</property>
-                    <property name="name">file</property>
+                    <property name="name">m_fileMenu</property>
                     <property name="permission">protected</property>
                     <object class="wxMenuItem" expanded="1">
                         <property name="bitmap"></property>

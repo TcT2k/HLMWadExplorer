@@ -16,6 +16,7 @@
 #include <wx/busyinfo.h>
 #include <wx/aboutdlg.h>
 #include <wx/textdlg.h>
+#include <wx/config.h>
 #if defined(__WXMSW__)
 #include <wx/msw/registry.h>
 #endif
@@ -80,9 +81,14 @@ ExploreFrame::ExploreFrame( wxWindow* parent ):
 	m_fileListNameColumn->SetWidth(150);
 	m_fileListSizeColumn->SetAlignment(wxALIGN_RIGHT);
 
+	m_fileHistory.UseMenu(m_fileMenu);
+	m_fileHistory.Load(*wxConfigBase::Get());
+
 	m_previewBookCtrl->AddPage(new wxPanel(m_previewBookCtrl), "General", true);
 	m_previewBookCtrl->AddPage(new ImagePanel(m_previewBookCtrl), "Image", true);
 	m_previewBookCtrl->AddPage(new TexturePackPanel(m_previewBookCtrl), "Texture", false);
+
+	Bind(wxEVT_MENU, &ExploreFrame::OnRecentFileClicked, this, wxID_FILE1, wxID_FILE9);
 }
 
 void ExploreFrame::OnAboutClicked( wxCommandEvent& event )
@@ -119,6 +125,11 @@ void ExploreFrame::OnWindowClose( wxCloseEvent& event )
 		}
 	} else
 		event.Skip();
+}
+
+void ExploreFrame::OnRecentFileClicked(wxCommandEvent& event)
+{
+	OpenFile(m_fileHistory.GetHistoryFile(event.GetId() - m_fileHistory.GetBaseId()));
 }
 
 void ExploreFrame::OnOpenClicked( wxCommandEvent& event )
@@ -159,6 +170,9 @@ void ExploreFrame::OpenFile(const wxString& filename)
 	
 	wxFileName inputFN(filename);
 	SetTitle(wxString::Format("%s - %s", wxTheApp->GetAppDisplayName(), inputFN.GetName()));
+
+	m_fileHistory.AddFileToHistory(filename);
+	m_fileHistory.Save(*wxConfigBase::Get());
 }
 
 void ExploreFrame::OnSaveClicked( wxCommandEvent& event )

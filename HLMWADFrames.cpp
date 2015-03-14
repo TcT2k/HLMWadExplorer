@@ -15,26 +15,26 @@ BaseExploreFrame::BaseExploreFrame( wxWindow* parent, wxWindowID id, const wxStr
 	this->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_BTNFACE ) );
 	
 	m_menubar = new wxMenuBar( 0 );
-	file = new wxMenu();
+	m_fileMenu = new wxMenu();
 	wxMenuItem* open;
-	open = new wxMenuItem( file, wxID_OPEN, wxString( wxEmptyString ) , wxEmptyString, wxITEM_NORMAL );
-	file->Append( open );
+	open = new wxMenuItem( m_fileMenu, wxID_OPEN, wxString( wxEmptyString ) , wxEmptyString, wxITEM_NORMAL );
+	m_fileMenu->Append( open );
 	
 	wxMenuItem* save;
-	save = new wxMenuItem( file, wxID_SAVE, wxString( wxEmptyString ) , wxEmptyString, wxITEM_NORMAL );
-	file->Append( save );
+	save = new wxMenuItem( m_fileMenu, wxID_SAVE, wxString( wxEmptyString ) , wxEmptyString, wxITEM_NORMAL );
+	m_fileMenu->Append( save );
 	
 	wxMenuItem* saveas;
-	saveas = new wxMenuItem( file, wxID_SAVEAS, wxString( wxEmptyString ) , wxEmptyString, wxITEM_NORMAL );
-	file->Append( saveas );
+	saveas = new wxMenuItem( m_fileMenu, wxID_SAVEAS, wxString( wxEmptyString ) , wxEmptyString, wxITEM_NORMAL );
+	m_fileMenu->Append( saveas );
 	
-	file->AppendSeparator();
+	m_fileMenu->AppendSeparator();
 	
 	wxMenuItem* quit;
-	quit = new wxMenuItem( file, wxID_EXIT, wxString( wxEmptyString ) , wxEmptyString, wxITEM_NORMAL );
-	file->Append( quit );
+	quit = new wxMenuItem( m_fileMenu, wxID_EXIT, wxString( wxEmptyString ) , wxEmptyString, wxITEM_NORMAL );
+	m_fileMenu->Append( quit );
 	
-	m_menubar->Append( file, _("&File") ); 
+	m_menubar->Append( m_fileMenu, _("&File") ); 
 	
 	resource = new wxMenu();
 	wxMenuItem* extract;
