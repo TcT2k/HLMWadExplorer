@@ -73,8 +73,6 @@ void Texture::Parse(wxInputStream& iStr)
 	wxUint32 frameCount;
 	iStr.Read(&frameCount, sizeof(frameCount));
 
-	wxLogDebug("Loading texture %s (%d Frames)", m_name, frameCount);
-
 	for (wxUint32 frameIndex = 0; frameIndex < frameCount; frameIndex++)
 	{
 		push_back(Frame(iStr));
