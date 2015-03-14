@@ -340,6 +340,8 @@ void ExploreFrame::OnFileListSelectionChanged( wxDataViewEvent& event )
 	if (m_fileListCtrl->GetSelectedItemsCount() != 1)
 		return;
 		
+	wxBusyCursor busyCursor;
+
 	size_t index = (size_t)m_fileListCtrl->GetSelection().GetID() - 1;
 	const WADArchiveEntry& entry = m_archive->GetEntry(index);
 	wxLogDebug("Selected: %s", entry.GetFileName());
