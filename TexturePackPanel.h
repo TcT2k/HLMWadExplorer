@@ -36,7 +36,7 @@ public:
 
 		void UpdateFrameImage();
 
-		wxBitmap GetFrameBitmap(const Frame frame, int zoom = 1);
+		wxBitmap GetFrameBitmap(const Frame& frame, int zoom = 1);
 };
 
 #endif // __TexturePackPanel__

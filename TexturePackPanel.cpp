@@ -83,7 +83,7 @@ void TexturePackPanel::UpdateFrameImage()
 	m_framePanel->Layout();
 }
 
-wxBitmap TexturePackPanel::GetFrameBitmap(const Frame frame, int zoom)
+wxBitmap TexturePackPanel::GetFrameBitmap(const Frame& frame, int zoom)
 {
 	wxSize imgSize = frame.GetSize();
 	imgSize *= zoom;
