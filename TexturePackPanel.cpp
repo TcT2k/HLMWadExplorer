@@ -94,9 +94,8 @@ wxBitmap TexturePackPanel::GetFrameBitmap(const Frame& frame, int zoom)
 	wxBitmap frameBmp(imgSize, m_bitmap.GetDepth());
 	wxMemoryDC dstDC;
 	dstDC.SelectObject(frameBmp);
-	dstDC.SetBrush(wxBrush(m_colourPicker->GetColour()));
-	dstDC.SetPen(wxPen(m_colourPicker->GetColour()));
-	dstDC.DrawRectangle(wxPoint(0, 0), imgSize);
+	dstDC.SetBackground(wxBrush(m_colourPicker->GetColour()));
+	dstDC.Clear();
 
 	dstDC.StretchBlit(wxPoint(0, 0), imgSize, &srcDC, frame.GetOffset(), frame.GetSize(), wxCOPY, true);
 
