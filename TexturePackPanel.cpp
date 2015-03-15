@@ -17,9 +17,6 @@ BaseTexturePackPanel( parent )
 void TexturePackPanel::LoadTexture(wxInputStream& iStr, wxBitmap bitmap)
 {
 	m_bitmap = bitmap;
-	wxSharedPtr<wxGraphicsContext> dstGC(wxGraphicsContext::Create(this));
-	if (m_bitmap.IsOk())
-		m_drawBitmap = dstGC->CreateBitmap(bitmap);
 
 	m_exportGIFButton->Disable();
 	m_frameDelaySpinCtrl->Disable();
@@ -91,6 +88,9 @@ wxBitmap TexturePackPanel::GetFrameBitmap(const Frame frame, int zoom)
 	wxSize imgSize = frame.GetSize();
 	imgSize *= zoom;
 
+	wxMemoryDC srcDC;
+	srcDC.SelectObject(m_bitmap);
+
 	wxBitmap frameBmp(imgSize, m_bitmap.GetDepth());
 	wxMemoryDC dstDC;
 	dstDC.SelectObject(frameBmp);
@@ -98,11 +98,7 @@ wxBitmap TexturePackPanel::GetFrameBitmap(const Frame frame, int zoom)
 	dstDC.SetPen(wxPen(m_colourPicker->GetColour()));
 	dstDC.DrawRectangle(wxPoint(0, 0), imgSize);
 
-	wxSharedPtr<wxGraphicsContext> dstGC(wxGraphicsContext::Create(dstDC));
-	dstGC->SetAntialiasMode(wxANTIALIAS_NONE);
-	wxGraphicsBitmap srcSubBmp = dstGC->CreateSubBitmap(m_drawBitmap, frame.GetOffset().x, frame.GetOffset().y, frame.GetSize().GetWidth(), frame.GetSize().GetHeight());
-	dstGC->DrawBitmap(srcSubBmp, 0, 0, imgSize.GetWidth(), imgSize.GetHeight());
-	dstGC.reset();
+	dstDC.StretchBlit(wxPoint(0, 0), imgSize, &srcDC, frame.GetOffset(), frame.GetSize(), wxCOPY, true);
 
 	return frameBmp;
 }
