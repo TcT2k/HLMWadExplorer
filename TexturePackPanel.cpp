@@ -80,13 +80,22 @@ void TexturePackPanel::UpdateFrameImage()
 
 	const Frame& frame = tex.at(m_frameSpinCtrl->GetValue());
 
+
+	m_frameBitmap->SetBitmap(GetFrameBitmap(frame, m_zoomSpinCtrl->GetValue()));
+	m_framePanel->Refresh();
+	m_framePanel->Layout();
+}
+
+wxBitmap TexturePackPanel::GetFrameBitmap(const Frame frame, int zoom)
+{
 	wxSize imgSize = frame.GetSize();
-	imgSize *= m_zoomSpinCtrl->GetValue();
+	imgSize *= zoom;
 
 	wxBitmap frameBmp(imgSize, m_bitmap.GetDepth());
 	wxMemoryDC dstDC;
 	dstDC.SelectObject(frameBmp);
 	dstDC.SetBrush(wxBrush(m_colourPicker->GetColour()));
+	dstDC.SetPen(wxPen(m_colourPicker->GetColour()));
 	dstDC.DrawRectangle(wxPoint(0, 0), imgSize);
 
 	wxSharedPtr<wxGraphicsContext> dstGC(wxGraphicsContext::Create(dstDC));
@@ -95,11 +104,7 @@ void TexturePackPanel::UpdateFrameImage()
 	dstGC->DrawBitmap(srcSubBmp, 0, 0, imgSize.GetWidth(), imgSize.GetHeight());
 	dstGC.reset();
 
-	dstDC.SelectObject(wxNullBitmap);
-
-	m_frameBitmap->SetBitmap(frameBmp);
-	m_framePanel->Refresh();
-	m_framePanel->Layout();
+	return frameBmp;
 }
 
 void TexturePackPanel::OnFrameSpinCtrlEnterPressed( wxCommandEvent& event )
@@ -134,23 +139,7 @@ void TexturePackPanel::OnExportGIFClicked(wxCommandEvent& event)
 		const Texture& tex = m_texturePack->at(m_textureListBox->GetSelection());
 		for (auto frame = tex.begin(); frame != tex.end(); ++frame)
 		{
-			wxSize imgSize = frame->GetSize();
-
-			wxBitmap frameBmp(imgSize, m_bitmap.GetDepth());
-			wxMemoryDC dstDC;
-			dstDC.SelectObject(frameBmp);
-			dstDC.SetBrush(wxBrush(m_colourPicker->GetColour()));
-			dstDC.DrawRectangle(wxPoint(0, 0), imgSize);
-
-			wxSharedPtr<wxGraphicsContext> dstGC(wxGraphicsContext::Create(dstDC));
-			dstGC->SetAntialiasMode(wxANTIALIAS_NONE);
-			wxGraphicsBitmap srcSubBmp = dstGC->CreateSubBitmap(m_drawBitmap, frame->GetOffset().x, frame->GetOffset().y, frame->GetSize().GetWidth(), frame->GetSize().GetHeight());
-			dstGC->DrawBitmap(srcSubBmp, 0, 0, imgSize.GetWidth(), imgSize.GetHeight());
-			dstGC.reset();
-
-			dstDC.SelectObject(wxNullBitmap);
-
-			wxImage frameImg(frameBmp.ConvertToImage());
+			wxImage frameImg(GetFrameBitmap(*frame).ConvertToImage());
 
 			wxQuantize::Quantize(frameImg, frameImg, 256);
 
