@@ -17,6 +17,7 @@ public:
 	{
 		wxImage::AddHandler(new wxPNGHandler());
 		wxImage::AddHandler(new wxJPEGHandler());
+		wxImage::AddHandler(new wxGIFHandler());
 
 		ExploreFrame* frame = new ExploreFrame(NULL);
 		frame->Show();

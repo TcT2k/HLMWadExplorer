@@ -23,6 +23,7 @@ class TexturePackPanel : public BaseTexturePackPanel
 		void OnFrameSpinCtrlEnterPressed( wxCommandEvent& event );
 		void OnColourPickerChanged(wxColourPickerEvent& event);
 		void OnZoomSpinCtrlChanged(wxSpinEvent& event);
+		void OnExportGIFClicked(wxCommandEvent& event);
 public:
 		/** Constructor */
 		TexturePackPanel( wxWindow* parent );

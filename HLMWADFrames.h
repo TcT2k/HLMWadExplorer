@@ -31,6 +31,8 @@
 #include <wx/spinctrl.h>
 #include <wx/clrpicker.h>
 #include <wx/statbmp.h>
+#include <wx/button.h>
+#include <wx/statbox.h>
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -112,6 +114,9 @@ class BaseTexturePackPanel : public wxPanel
 		wxColourPickerCtrl* m_colourPicker;
 		wxPanel* m_framePanel;
 		wxStaticBitmap* m_frameBitmap;
+		wxStaticText* m_staticText8;
+		wxSpinCtrl* m_frameDelaySpinCtrl;
+		wxButton* m_exportGIFButton;
 		wxBoxSizer* m_infoSizer;
 		wxStaticText* m_staticText3;
 		wxSpinCtrl* m_zoomSpinCtrl;
@@ -125,6 +130,7 @@ class BaseTexturePackPanel : public wxPanel
 		virtual void OnFrameSpinCtrlChanged( wxSpinEvent& event ) { event.Skip(); }
 		virtual void OnFrameSpinCtrlEnterPressed( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnColourPickerChanged( wxColourPickerEvent& event ) { event.Skip(); }
+		virtual void OnExportGIFClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnZoomSpinCtrlChanged( wxSpinEvent& event ) { event.Skip(); }
 		
 	

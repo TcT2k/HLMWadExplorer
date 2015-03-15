@@ -204,7 +204,7 @@ BaseTexturePackPanel::BaseTexturePackPanel( wxWindow* parent, wxWindowID id, con
 	bSizer7->Add( m_staticText2, 0, wxALIGN_CENTER|wxALL, 5 );
 	
 	m_colourPicker = new wxColourPickerCtrl( m_panel4, wxID_ANY, wxColour( 255, 255, 255 ), wxDefaultPosition, wxDefaultSize, wxCLRP_DEFAULT_STYLE );
-	bSizer7->Add( m_colourPicker, 0, wxALL, 5 );
+	bSizer7->Add( m_colourPicker, 0, wxALIGN_CENTER|wxALL, 5 );
 	
 	
 	bSizer6->Add( bSizer7, 0, wxEXPAND, 5 );
@@ -221,6 +221,35 @@ BaseTexturePackPanel::BaseTexturePackPanel( wxWindow* parent, wxWindowID id, con
 	m_framePanel->Layout();
 	bSizer11->Fit( m_framePanel );
 	bSizer6->Add( m_framePanel, 1, wxEXPAND | wxALL, 5 );
+	
+	wxBoxSizer* bSizer111;
+	bSizer111 = new wxBoxSizer( wxHORIZONTAL );
+	
+	
+	bSizer111->Add( 0, 0, 1, wxEXPAND, 5 );
+	
+	wxStaticBoxSizer* sbSizer1;
+	sbSizer1 = new wxStaticBoxSizer( new wxStaticBox( m_panel4, wxID_ANY, _("Animated GIF") ), wxVERTICAL );
+	
+	m_staticText8 = new wxStaticText( m_panel4, wxID_ANY, _("Frame delay:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText8->Wrap( -1 );
+	sbSizer1->Add( m_staticText8, 0, wxLEFT, 5 );
+	
+	m_frameDelaySpinCtrl = new wxSpinCtrl( m_panel4, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 10, 10000, 250 );
+	m_frameDelaySpinCtrl->SetMaxSize( wxSize( 70,-1 ) );
+	
+	sbSizer1->Add( m_frameDelaySpinCtrl, 0, wxLEFT, 5 );
+	
+	m_exportGIFButton = new wxButton( m_panel4, wxID_ANY, _("Export"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_exportGIFButton->Enable( false );
+	
+	sbSizer1->Add( m_exportGIFButton, 0, wxALL, 5 );
+	
+	
+	bSizer111->Add( sbSizer1, 0, wxALL|wxEXPAND, 5 );
+	
+	
+	bSizer6->Add( bSizer111, 0, wxEXPAND, 5 );
 	
 	m_infoSizer = new wxBoxSizer( wxHORIZONTAL );
 	
@@ -269,6 +298,7 @@ BaseTexturePackPanel::BaseTexturePackPanel( wxWindow* parent, wxWindowID id, con
 	m_frameSpinCtrl->Connect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( BaseTexturePackPanel::OnFrameSpinCtrlChanged ), NULL, this );
 	m_frameSpinCtrl->Connect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( BaseTexturePackPanel::OnFrameSpinCtrlEnterPressed ), NULL, this );
 	m_colourPicker->Connect( wxEVT_COMMAND_COLOURPICKER_CHANGED, wxColourPickerEventHandler( BaseTexturePackPanel::OnColourPickerChanged ), NULL, this );
+	m_exportGIFButton->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( BaseTexturePackPanel::OnExportGIFClicked ), NULL, this );
 	m_zoomSpinCtrl->Connect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( BaseTexturePackPanel::OnZoomSpinCtrlChanged ), NULL, this );
 }
 
@@ -279,6 +309,7 @@ BaseTexturePackPanel::~BaseTexturePackPanel()
 	m_frameSpinCtrl->Disconnect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( BaseTexturePackPanel::OnFrameSpinCtrlChanged ), NULL, this );
 	m_frameSpinCtrl->Disconnect( wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler( BaseTexturePackPanel::OnFrameSpinCtrlEnterPressed ), NULL, this );
 	m_colourPicker->Disconnect( wxEVT_COMMAND_COLOURPICKER_CHANGED, wxColourPickerEventHandler( BaseTexturePackPanel::OnColourPickerChanged ), NULL, this );
+	m_exportGIFButton->Disconnect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( BaseTexturePackPanel::OnExportGIFClicked ), NULL, this );
 	m_zoomSpinCtrl->Disconnect( wxEVT_COMMAND_SPINCTRL_UPDATED, wxSpinEventHandler( BaseTexturePackPanel::OnZoomSpinCtrlChanged ), NULL, this );
 	
 }
