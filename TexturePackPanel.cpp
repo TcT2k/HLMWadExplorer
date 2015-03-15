@@ -47,7 +47,7 @@ void TexturePackPanel::OnTextureListBoxSelected( wxCommandEvent& event )
 {
 	const Texture& tex = m_texturePack->at(m_textureListBox->GetSelection());
 
-	m_frameSpinCtrl->SetMax(tex.size() - 1);
+	m_frameSpinCtrl->SetRange(0, tex.size() - 1);
 	m_frameSpinCtrl->SetValue(0);
 	m_exportGIFButton->Enable(tex.size() > 1);
 	m_frameDelaySpinCtrl->Enable(tex.size() > 1);

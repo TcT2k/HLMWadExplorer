@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 2.8)
 
 project(HLMWADExplorer)
 
@@ -23,6 +23,10 @@ set(SRCS ${SRCS}
 
 add_executable(HLMWADExplorer WIN32 MACOSX_BUNDLE ${SRCS})
 target_link_libraries(HLMWADExplorer ${wxWidgets_LIBRARIES})
+
+if (NOT MSVC)
+	set(CMAKE_CXX_FLAGS                "-Wall -std=c++11")
+endif()
 
 set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION ".")
 install(TARGETS HLMWADExplorer RUNTIME DESTINATION ${CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION})

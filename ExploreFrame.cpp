@@ -64,7 +64,7 @@ public:
 				variant = entry.GetFileName();
 				break;
 			case 2:
-				variant = wxFileName::GetHumanReadableSize(entry.GetSize());
+				variant = wxFileName::GetHumanReadableSize(wxULongLong(entry.GetSize()));
 				break;
 		}
 
