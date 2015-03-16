@@ -60,6 +60,7 @@ class ExploreFrame : public BaseExploreFrame
 
 		void OpenFile(const wxString& filename);
 
+		void UpdateTitle();
 };
 
 #endif // __ExploreFrame__

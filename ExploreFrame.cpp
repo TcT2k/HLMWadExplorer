@@ -95,7 +95,7 @@ ExploreFrame::ExploreFrame( wxWindow* parent ):
 	BaseExploreFrame( parent ),
 	m_archive(NULL)
 {
-	SetTitle(wxTheApp->GetAppDisplayName());
+	UpdateTitle();
 	m_menubar->Enable(ID_EXTRACT, false);
 	m_menubar->Enable(wxID_SAVE, false);
 	m_menubar->Enable(wxID_SAVEAS, false);
@@ -196,12 +196,7 @@ void ExploreFrame::OpenFile(const wxString& filename)
 	m_menubar->Enable(wxID_SAVEAS, true);
 	m_menubar->Enable(ID_PATCH_APPLY, true);
 	m_menubar->Enable(ID_PATCH_PREPARE, true);
-#if defined(__WXOSX__)
-	OSXSetModified(false);
-#endif
-	
-	wxFileName inputFN(filename);
-	SetTitle(wxString::Format("%s - %s", wxTheApp->GetAppDisplayName(), inputFN.GetName()));
+	UpdateTitle();
 
 	m_fileHistory.AddFileToHistory(filename);
 	m_fileHistory.Save(*wxConfigBase::Get());
@@ -214,9 +209,7 @@ void ExploreFrame::OnSaveClicked( wxCommandEvent& event )
 		wxBusyInfo busyInfo(_("Writing file..."));
 		wxBusyCursor busyCursor;
 		m_archive->Save();
-#if defined(__WXOSX__)
-		OSXSetModified(false);
-#endif
+		UpdateTitle();
 	}
 }
 
@@ -307,10 +300,8 @@ void ExploreFrame::OnReplaceClicked( wxCommandEvent& event )
 		static_cast<FileDataModel*>(m_fileListCtrl->GetModel())->RowChanged(index);
 		wxDataViewEvent evt(wxEVT_DATAVIEW_SELECTION_CHANGED);
 		OnFileListSelectionChanged(evt);
-		
-#if defined(__WXOSX__)
-		OSXSetModified(true);
-#endif
+
+		UpdateTitle();
 	}
 }
 
@@ -328,10 +319,8 @@ void ExploreFrame::OnAddClicked( wxCommandEvent& event )
 			newEntryName = dlg.GetValue();
 			m_archive->Add(WADArchiveEntry(newEntryName, fileDlg.GetPath()));
 			static_cast<FileDataModel*>(m_fileListCtrl->GetModel())->RowAppended();
-			
-#if defined(__WXOSX__)
-			OSXSetModified(true);
-#endif
+
+			UpdateTitle();
 		}
 	}
 }
@@ -347,10 +336,8 @@ void ExploreFrame::OnDeleteClicked( wxCommandEvent& event )
 		static_cast<FileDataModel*>(m_fileListCtrl->GetModel())->RowDeleted(index);
 		wxDataViewEvent evt(wxEVT_DATAVIEW_SELECTION_CHANGED);
 		OnFileListSelectionChanged(evt);
-		
-#if defined(__WXOSX__)
-		OSXSetModified(true);
-#endif
+
+		UpdateTitle();
 	}
 }
 
@@ -498,5 +485,26 @@ void ExploreFrame::OnPatchCreateClicked(wxCommandEvent& event)
 
 			wxLaunchDefaultApplication(folderFN.GetPath());
 		}
+	}
+}
+
+void ExploreFrame::UpdateTitle()
+{
+	bool modified = m_archive.get() && m_archive->IsModified();
+
+	wxString modStr;
+
+#if defined(__WXOSX__)
+	OSXSetModified(modified);
+#else
+	if (modified)
+		modStr = "*";
+#endif
+	if (m_archive.get())
+	{
+		wxFileName archiveFN(m_archive->GetFileName());
+		SetTitle(wxString::Format("%s%s - %s", modStr, archiveFN.GetName(), wxTheApp->GetAppDisplayName()));
+	} else {
+		SetTitle(wxTheApp->GetAppDisplayName());
 	}
 }
