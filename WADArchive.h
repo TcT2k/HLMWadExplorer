@@ -29,6 +29,7 @@ public:
 		m_fileName(entry.GetFileName()),
 		m_size(entry.GetSize()),
 		m_offset(entry.GetOffset()),
+		m_sourceFileName(entry.GetSourceFileName()),
 		m_sourceArchive(sourceArchive)
 	{
 
