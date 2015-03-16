@@ -136,9 +136,12 @@ void ExploreFrame::OnWindowClose( wxCloseEvent& event )
 {
 	if (m_archive && m_archive->IsModified())
 	{
-		switch (wxMessageBox(_("Do you wan't to save unsaved changes?"), _("Warning"), wxICON_WARNING | wxYES_NO | wxCANCEL | wxNO_DEFAULT, this))
+		wxMessageDialog msgDlg(this, _("Do you wan't to save unsaved changes?"), _("Warning"), wxICON_WARNING | wxYES_NO | wxCANCEL);
+		msgDlg.SetYesNoLabels(_("Save"), _("Don't Save"));
+
+		switch (msgDlg.ShowModal())
 		{
-			case wxYES:
+			case wxID_YES:
 			{
 				wxBusyInfo busyInfo(_("Writing file..."));
 				wxBusyCursor busyCursor;
@@ -146,7 +149,7 @@ void ExploreFrame::OnWindowClose( wxCloseEvent& event )
 				event.Skip();
 				break;
 			}
-			case wxNO:
+			case wxID_NO:
 				event.Skip();
 				break;
 			default:
