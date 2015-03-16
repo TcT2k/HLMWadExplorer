@@ -162,7 +162,15 @@ void ExploreFrame::OnWindowClose( wxCloseEvent& event )
 
 void ExploreFrame::OnRecentFileClicked(wxCommandEvent& event)
 {
-	OpenFile(m_fileHistory.GetHistoryFile(event.GetId() - m_fileHistory.GetBaseId()));
+	size_t historyIndex = event.GetId() - m_fileHistory.GetBaseId();
+	wxString filename = m_fileHistory.GetHistoryFile(historyIndex);
+	wxFileName testFN(filename);
+	if (!testFN.Exists())
+	{
+		wxLogError(_("File not found: %s"), filename);
+		m_fileHistory.RemoveFileFromHistory(historyIndex);
+	} else
+		OpenFile(filename);
 }
 
 void ExploreFrame::OnOpenClicked( wxCommandEvent& event )
