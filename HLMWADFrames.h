@@ -33,6 +33,7 @@
 #include <wx/statbmp.h>
 #include <wx/button.h>
 #include <wx/statbox.h>
+#include <wx/textctrl.h>
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -161,6 +162,23 @@ class ImagePanel : public wxPanel
 		
 		ImagePanel( wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 500,300 ), long style = wxTAB_TRAVERSAL ); 
 		~ImagePanel();
+	
+};
+
+///////////////////////////////////////////////////////////////////////////////
+/// Class TextPanel
+///////////////////////////////////////////////////////////////////////////////
+class TextPanel : public wxPanel 
+{
+	private:
+	
+	protected:
+	
+	public:
+		wxTextCtrl* m_textCtrl;
+		
+		TextPanel( wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 500,300 ), long style = wxTAB_TRAVERSAL ); 
+		~TextPanel();
 	
 };
 

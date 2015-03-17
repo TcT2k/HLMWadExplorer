@@ -111,8 +111,9 @@ ExploreFrame::ExploreFrame( wxWindow* parent ):
 	m_fileHistory.Load(*wxConfigBase::Get());
 
 	m_previewBookCtrl->AddPage(new wxPanel(m_previewBookCtrl), "General", true);
-	m_previewBookCtrl->AddPage(new ImagePanel(m_previewBookCtrl), "Image", true);
+	m_previewBookCtrl->AddPage(new ImagePanel(m_previewBookCtrl), "Image", false);
 	m_previewBookCtrl->AddPage(new TexturePackPanel(m_previewBookCtrl), "Texture", false);
+	m_previewBookCtrl->AddPage(new TextPanel(m_previewBookCtrl), "Text", false);
 
 	m_preparingPatch = false;
 
@@ -400,6 +401,22 @@ void ExploreFrame::OnFileListSelectionChanged( wxDataViewEvent& event )
 
 		TexturePackPanel* texPanel = (TexturePackPanel*)m_previewBookCtrl->GetCurrentPage();
 		texPanel->LoadTexture(iStr, m_archive->ExtractBitmap(imgEntry));
+	}
+	else if (fileExt.IsSameAs("fnt", false) ||
+			 fileExt.IsSameAs("vsh", false)||
+			 fileExt.IsSameAs("fsh", false))
+	{
+		m_previewBookCtrl->ChangeSelection(3);
+		TextPanel* textPanel = (TextPanel*) m_previewBookCtrl->GetCurrentPage();
+
+		wxMemoryOutputStream oStr;
+		m_archive->Extract(entry, oStr);
+		wxStreamBuffer* buffer = oStr.GetOutputStreamBuffer();
+		wxString text((const char*)buffer->GetBufferStart(), buffer->GetBufferSize());
+#if !defined(__WXMSW__)
+		text.Replace("\r\n", "\n");
+#endif
+		textPanel->m_textCtrl->SetValue(text);
 	}
 	else
 		m_previewBookCtrl->ChangeSelection(0);
