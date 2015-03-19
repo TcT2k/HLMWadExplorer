@@ -6,6 +6,10 @@ find_package(wxWidgets COMPONENTS core base adv REQUIRED)
 
 include( ${wxWidgets_USE_FILE} )
 
+if(MSVC)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+endif()
+
 set(SRCS ${SRCS}
 	App.cpp
 	ExploreFrame.cpp
