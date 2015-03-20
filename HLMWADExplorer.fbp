@@ -424,7 +424,7 @@
                         <property name="show">1</property>
                         <property name="size"></property>
                         <property name="splitmode">wxSPLIT_VERTICAL</property>
-                        <property name="style">wxSP_3D|wxSP_LIVE_UPDATE</property>
+                        <property name="style">wxSP_LIVE_UPDATE</property>
                         <property name="subclass"></property>
                         <property name="toolbar_pane">0</property>
                         <property name="tooltip"></property>
@@ -910,7 +910,7 @@
                         <property name="show">1</property>
                         <property name="size"></property>
                         <property name="splitmode">wxSPLIT_VERTICAL</property>
-                        <property name="style">wxSP_3D|wxSP_LIVE_UPDATE</property>
+                        <property name="style">wxSP_LIVE_UPDATE</property>
                         <property name="subclass"></property>
                         <property name="toolbar_pane">0</property>
                         <property name="tooltip"></property>
@@ -1289,7 +1289,7 @@
                                             </object>
                                             <object class="sizeritem" expanded="1">
                                                 <property name="border">5</property>
-                                                <property name="flag">wxALL</property>
+                                                <property name="flag">wxALIGN_CENTER|wxALL</property>
                                                 <property name="proportion">0</property>
                                                 <object class="wxSpinCtrl" expanded="1">
                                                     <property name="BottomDockable">1</property>
