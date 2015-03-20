@@ -67,6 +67,8 @@ class ExploreFrame : public BaseExploreFrame
 		bool ConfirmBackup();
 	
 		void CheckBackup();
+
+		wxString GetGameBasePath() const;
 };
 
 #endif // __ExploreFrame__

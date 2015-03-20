@@ -110,6 +110,14 @@ ExploreFrame::ExploreFrame( wxWindow* parent ):
 
 	m_fileHistory.UseMenu(m_fileMenu);
 	m_fileHistory.Load(*wxConfigBase::Get());
+	if (m_fileHistory.GetCount() == 0)
+	{
+		// Initialize with default file names
+		wxFileName defaultFN(GetGameBasePath(), "hlm2_data_desktop.wad");
+		m_fileHistory.AddFileToHistory(defaultFN.GetFullPath());
+		defaultFN.SetName("hlm2_patch_desktop");
+		m_fileHistory.AddFileToHistory(defaultFN.GetFullPath());
+	}
 
 	m_previewBookCtrl->AddPage(new wxPanel(m_previewBookCtrl), "General", true);
 	m_previewBookCtrl->AddPage(new ImagePanel(m_previewBookCtrl), "Image", false);
@@ -175,7 +183,7 @@ void ExploreFrame::OnRecentFileClicked(wxCommandEvent& event)
 		OpenFile(filename);
 }
 
-void ExploreFrame::OnOpenClicked( wxCommandEvent& event )
+wxString ExploreFrame::GetGameBasePath() const
 {
 	wxString hlmPath;
 #if defined(__WXOSX__)
@@ -187,10 +195,14 @@ void ExploreFrame::OnOpenClicked( wxCommandEvent& event )
 		regKey.QueryValue("SteamPath", hlmPath);
 
 		hlmPath += "\\SteamApps\\Common\\Hotline Miami 2";
-	}
+}
 #endif
-	
-	wxFileDialog fileDlg(this, _("Select WAD file"), hlmPath, wxString(), "*.wad", wxFD_DEFAULT_STYLE | wxFD_FILE_MUST_EXIST);
+	return hlmPath;
+}
+
+void ExploreFrame::OnOpenClicked( wxCommandEvent& event )
+{
+	wxFileDialog fileDlg(this, _("Select WAD file"), GetGameBasePath(), wxString(), "*.wad", wxFD_DEFAULT_STYLE | wxFD_FILE_MUST_EXIST);
 
 	if (fileDlg.ShowModal() == wxID_OK)
 	{
