@@ -342,6 +342,42 @@ void ExploreFrame::OnReplaceClicked( wxCommandEvent& event )
 						 entryFN.GetFullName(), "*." + entryFN.GetExt(), wxFD_DEFAULT_STYLE  | wxFD_FILE_MUST_EXIST);
 	if (fileDlg.ShowModal() == wxID_OK)
 	{
+		if (entryFN.GetExt().IsSameAs("png", false))
+		{
+			wxString imgErrors;
+
+			// Do some sanity checks on the replacement image
+			wxImage replaceImage(fileDlg.GetPath());
+			if (replaceImage.IsOk())
+			{
+				if (replaceImage.HasAlpha())
+					imgErrors += _("- Image may not have an alpha mask\n");
+
+				wxMemoryOutputStream oStr;
+				m_archive->Extract(entry, oStr);
+				wxStreamBuffer* buffer = oStr.GetOutputStreamBuffer();
+				wxMemoryInputStream iStr(buffer->GetBufferStart(), buffer->GetBufferSize());
+				wxImage orgImage(iStr);
+				if (orgImage.GetSize() != replaceImage.GetSize())
+					imgErrors += wxString::Format(_("- Image has to be %dx%d in size\n"), orgImage.GetSize().x, orgImage.GetSize().y);
+
+				if (orgImage.HasMask() != replaceImage.HasMask())
+					imgErrors += _("- Image must have transparency\n");
+			}
+			else
+				imgErrors = _("Image could not be loaded");
+
+			if (!imgErrors.empty())
+			{
+				wxMessageDialog msgDlg(this, wxString::Format(
+					_("Image Errors\n\nThe replacement image contains erros which might crash the game\n\n%s\n\nDo you want't to replace anyway?"), imgErrors),
+					_("Warning"), wxICON_WARNING | wxYES_NO | wxNO_DEFAULT);
+				msgDlg.SetYesNoLabels(_("Replace"), _("Don't Replace"));
+				if (msgDlg.ShowModal() != wxID_YES)
+					return;
+			}
+		}
+
 		size_t index = (size_t) m_fileListCtrl->GetSelection().GetID() - 1;
 		m_archive->Replace(index, fileDlg.GetPath());
 		static_cast<FileDataModel*>(m_fileListCtrl->GetModel())->RowChanged(index);
