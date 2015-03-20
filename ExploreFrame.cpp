@@ -246,13 +246,18 @@ void ExploreFrame::OnSaveAsClicked( wxCommandEvent& event )
 
 void ExploreFrame::OnRestoreClicked( wxCommandEvent& event )
 {
-	wxBusyInfo busyInfo(_("Restoring from backup..."));
-	wxBusyCursor busyCursor;
-	if (!wxCopyFile(m_archive->GetFileName() + "_backup", m_archive->GetFileName(), true))
-		wxLogError(_("Backup could not be restored"));
-	else {
-		wxString restoredFN = m_archive->GetFileName();
-		OpenFile(restoredFN);
+	wxMessageDialog msgDlg(this, _("Are you sure you wan't to restore this file from the backup copy?"), _("Warning"), wxICON_WARNING | wxYES_NO);
+	msgDlg.SetYesNoLabels(_("Restore"), _("Don't Restore"));
+	if (msgDlg.ShowModal() == wxID_YES)
+	{
+		wxBusyInfo busyInfo(_("Restoring from backup..."));
+		wxBusyCursor busyCursor;
+		if (!wxCopyFile(m_archive->GetFileName() + "_backup", m_archive->GetFileName(), true))
+			wxLogError(_("Backup could not be restored"));
+		else {
+			wxString restoredFN = m_archive->GetFileName();
+			OpenFile(restoredFN);
+		}
 	}
 }
 
