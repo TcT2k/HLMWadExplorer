@@ -125,7 +125,7 @@ BaseExploreFrame::BaseExploreFrame( wxWindow* parent, wxWindowID id, const wxStr
 	m_previewPanel->SetSizer( bSizer4 );
 	m_previewPanel->Layout();
 	bSizer4->Fit( m_previewPanel );
-	m_mainSplitter->SplitVertically( m_listPanel, m_previewPanel, 300 );
+	m_mainSplitter->SplitVertically( m_listPanel, m_previewPanel, 400 );
 	bSizer2->Add( m_mainSplitter, 1, wxEXPAND, 5 );
 	
 	

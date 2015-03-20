@@ -93,7 +93,7 @@ class BaseExploreFrame : public wxFrame
 		
 		void m_mainSplitterOnIdle( wxIdleEvent& )
 		{
-			m_mainSplitter->SetSashPosition( 300 );
+			m_mainSplitter->SetSashPosition( 400 );
 			m_mainSplitter->Disconnect( wxEVT_IDLE, wxIdleEventHandler( BaseExploreFrame::m_mainSplitterOnIdle ), NULL, this );
 		}
 	

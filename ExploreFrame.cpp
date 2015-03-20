@@ -103,7 +103,7 @@ ExploreFrame::ExploreFrame( wxWindow* parent ):
 	m_menubar->Enable(ID_PATCH_APPLY, false);
 	m_menubar->Enable(ID_PATCH_PREPARE, false);
 	m_menubar->Enable(ID_PATCH_CREATE, false);
-	m_fileListNameColumn->SetWidth(150);
+	m_fileListNameColumn->SetWidth(250);
 	m_fileListSizeColumn->SetAlignment(wxALIGN_RIGHT);
 	m_fileListToggleColumn->SetWidth(24);
 	m_fileListToggleColumn->SetHidden(true);
