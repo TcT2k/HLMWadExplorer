@@ -203,6 +203,7 @@ void ExploreFrame::OpenFile(const wxString& filename)
 	m_archive = new WADArchive(filename);
 	wxObjectDataPtr<FileDataModel> model(new FileDataModel(this, m_archive.get()));
 	m_fileListCtrl->AssociateModel(model.get());
+	m_fileListCtrl->Refresh();
 	m_menubar->Enable(ID_EXTRACT, true);
 	m_menubar->Enable(wxID_ADD, true);
 	m_menubar->Enable(wxID_SAVE, true);
