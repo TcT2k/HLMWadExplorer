@@ -93,7 +93,8 @@ private:
 
 ExploreFrame::ExploreFrame( wxWindow* parent ):
 	BaseExploreFrame( parent ),
-	m_archive(NULL)
+	m_archive(NULL),
+	m_backupAvailable(false)
 {
 	UpdateTitle();
 	m_menubar->Enable(ID_EXTRACT, false);
@@ -209,6 +210,7 @@ void ExploreFrame::OpenFile(const wxString& filename)
 	m_menubar->Enable(ID_PATCH_APPLY, true);
 	m_menubar->Enable(ID_PATCH_PREPARE, true);
 	UpdateTitle();
+	CheckBackup();
 
 	m_fileHistory.AddFileToHistory(filename);
 	m_fileHistory.Save(*wxConfigBase::Get());
@@ -216,6 +218,9 @@ void ExploreFrame::OpenFile(const wxString& filename)
 
 void ExploreFrame::OnSaveClicked( wxCommandEvent& event )
 {
+	if (!ConfirmBackup())
+		return;
+	
 	if (wxMessageBox(_("Are you sure you want to overwrite the WAD?"), _("Warning"), wxICON_WARNING | wxYES_NO | wxNO_DEFAULT, this) == wxYES)
 	{
 		wxBusyInfo busyInfo(_("Writing file..."));
@@ -236,6 +241,18 @@ void ExploreFrame::OnSaveAsClicked( wxCommandEvent& event )
 		wxBusyCursor busyCursor;
 		m_archive->Save(fileDlg.GetPath());
 		OpenFile(fileDlg.GetPath());
+	}
+}
+
+void ExploreFrame::OnRestoreClicked( wxCommandEvent& event )
+{
+	wxBusyInfo busyInfo(_("Restoring from backup..."));
+	wxBusyCursor busyCursor;
+	if (!wxCopyFile(m_archive->GetFileName() + "_backup", m_archive->GetFileName(), true))
+		wxLogError(_("Backup could not be restored"));
+	else {
+		wxString restoredFN = m_archive->GetFileName();
+		OpenFile(restoredFN);
 	}
 }
 
@@ -429,6 +446,9 @@ void ExploreFrame::OnFileListDoubleClick( wxMouseEvent& event )
 
 void ExploreFrame::OnPatchApplyClicked(wxCommandEvent& event)
 {
+	if (!ConfirmBackup())
+		return;
+	
 	wxString patchFolder = wxStandardPaths::Get().GetDocumentsDir();
 	wxFileDialog fileDlg(this, _("Select patch wad to apply"), patchFolder, wxString(),
 		"*.patchwad", wxFD_DEFAULT_STYLE | wxFD_FILE_MUST_EXIST);
@@ -535,4 +555,42 @@ void ExploreFrame::UpdateTitle()
 	} else {
 		SetTitle(wxTheApp->GetAppDisplayName());
 	}
+}
+
+bool ExploreFrame::ConfirmBackup()
+{
+	if (m_backupAvailable)
+		return true;
+	
+	wxMessageDialog msgDlg(this, _("Backup recommended\n\nBefore modifing the file it is recommend to create a backup.\nDo you wish to create a backup now?"),
+					_("Warning"), wxICON_WARNING | wxYES_NO | wxCANCEL);
+	msgDlg.SetYesNoLabels(_("Backup"), _("Don't backup"));
+
+	switch (msgDlg.ShowModal()) {
+		case wxID_YES:
+		{
+			wxBusyInfo busyInfo(_("Creating backup..."));
+			wxBusyCursor busyCursor;
+			if (!wxCopyFile(m_archive->GetFileName(), m_archive->GetFileName() + "_backup"))
+			{
+				wxLogError(_("Backup could not be created"));
+				return false;
+			} else {
+				CheckBackup();
+				return true;
+			}
+		}
+		
+		case wxID_NO:
+			return true;
+			
+		default:
+			return false;
+	}
+}
+
+void ExploreFrame::CheckBackup()
+{
+	m_backupAvailable = wxFileExists(m_archive->GetFileName() + "_backup");
+	m_menubar->Enable(ID_RESTORE, m_backupAvailable);
 }

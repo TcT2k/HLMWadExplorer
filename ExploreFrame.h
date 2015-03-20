@@ -31,6 +31,7 @@ class ExploreFrame : public BaseExploreFrame
 		void OnOpenClicked( wxCommandEvent& event );
 		void OnSaveClicked( wxCommandEvent& event );
 		void OnSaveAsClicked( wxCommandEvent& event );
+		void OnRestoreClicked( wxCommandEvent& event );
 		void OnExtractClicked( wxCommandEvent& event );
 		void OnReplaceClicked( wxCommandEvent& event );
 		void OnAddClicked( wxCommandEvent& event );
@@ -52,6 +53,7 @@ class ExploreFrame : public BaseExploreFrame
 		friend class FileDataModel;
 
 		wxSharedPtr<WADArchive> m_archive;
+		bool m_backupAvailable;
 		wxFileHistory m_fileHistory;
 		bool m_preparingPatch;
 		std::set<size_t> m_patchEntries;
@@ -61,6 +63,10 @@ class ExploreFrame : public BaseExploreFrame
 		void OpenFile(const wxString& filename);
 
 		void UpdateTitle();
+	
+		bool ConfirmBackup();
+	
+		void CheckBackup();
 };
 
 #endif // __ExploreFrame__

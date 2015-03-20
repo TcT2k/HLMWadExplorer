@@ -37,11 +37,12 @@
 
 ///////////////////////////////////////////////////////////////////////////
 
-#define ID_EXTRACT 1000
-#define ID_REPLACE 1001
-#define ID_PATCH_APPLY 1002
-#define ID_PATCH_PREPARE 1003
-#define ID_PATCH_CREATE 1004
+#define ID_RESTORE 1000
+#define ID_EXTRACT 1001
+#define ID_REPLACE 1002
+#define ID_PATCH_APPLY 1003
+#define ID_PATCH_PREPARE 1004
+#define ID_PATCH_CREATE 1005
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Class BaseExploreFrame
@@ -70,6 +71,7 @@ class BaseExploreFrame : public wxFrame
 		virtual void OnOpenClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnSaveClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnSaveAsClicked( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnRestoreClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnQuitClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnExtractClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnReplaceClicked( wxCommandEvent& event ) { event.Skip(); }
