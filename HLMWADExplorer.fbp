@@ -542,7 +542,7 @@
                                         <property name="border">5</property>
                                         <property name="flag">wxEXPAND</property>
                                         <property name="proportion">1</property>
-                                        <object class="wxDataViewListCtrl" expanded="1">
+                                        <object class="wxDataViewCtrl" expanded="1">
                                             <property name="bg"></property>
                                             <property name="context_help"></property>
                                             <property name="context_menu">1</property>
@@ -564,24 +564,24 @@
                                             <property name="window_name"></property>
                                             <property name="window_style"></property>
                                             <event name="OnChar"></event>
-                                            <event name="OnDataViewListCtrlColumnHeaderClick"></event>
-                                            <event name="OnDataViewListCtrlColumnHeaderRightClick"></event>
-                                            <event name="OnDataViewListCtrlColumnReordered"></event>
-                                            <event name="OnDataViewListCtrlColumnSorted"></event>
-                                            <event name="OnDataViewListCtrlItemActivated"></event>
-                                            <event name="OnDataViewListCtrlItemBeginDrag"></event>
-                                            <event name="OnDataViewListCtrlItemCollapsed"></event>
-                                            <event name="OnDataViewListCtrlItemCollapsing"></event>
-                                            <event name="OnDataViewListCtrlItemContextMenu"></event>
-                                            <event name="OnDataViewListCtrlItemDrop"></event>
-                                            <event name="OnDataViewListCtrlItemDropPossible"></event>
-                                            <event name="OnDataViewListCtrlItemEditingDone"></event>
-                                            <event name="OnDataViewListCtrlItemEditingStarted"></event>
-                                            <event name="OnDataViewListCtrlItemExpanded"></event>
-                                            <event name="OnDataViewListCtrlItemExpanding"></event>
-                                            <event name="OnDataViewListCtrlItemStartEditing"></event>
-                                            <event name="OnDataViewListCtrlItemValueChanged"></event>
-                                            <event name="OnDataViewListCtrlSelectionChanged">OnFileListSelectionChanged</event>
+                                            <event name="OnDataViewCtrlColumnHeaderClick"></event>
+                                            <event name="OnDataViewCtrlColumnHeaderRightClick"></event>
+                                            <event name="OnDataViewCtrlColumnReordered"></event>
+                                            <event name="OnDataViewCtrlColumnSorted"></event>
+                                            <event name="OnDataViewCtrlItemActivated"></event>
+                                            <event name="OnDataViewCtrlItemBeginDrag"></event>
+                                            <event name="OnDataViewCtrlItemCollapsed"></event>
+                                            <event name="OnDataViewCtrlItemCollapsing"></event>
+                                            <event name="OnDataViewCtrlItemContextMenu"></event>
+                                            <event name="OnDataViewCtrlItemDrop"></event>
+                                            <event name="OnDataViewCtrlItemDropPossible"></event>
+                                            <event name="OnDataViewCtrlItemEditingDone"></event>
+                                            <event name="OnDataViewCtrlItemEditingStarted"></event>
+                                            <event name="OnDataViewCtrlItemExpanded"></event>
+                                            <event name="OnDataViewCtrlItemExpanding"></event>
+                                            <event name="OnDataViewCtrlItemStartEditing"></event>
+                                            <event name="OnDataViewCtrlItemValueChanged"></event>
+                                            <event name="OnDataViewCtrlSelectionChanged">OnFileListSelectionChanged</event>
                                             <event name="OnEnterWindow"></event>
                                             <event name="OnEraseBackground"></event>
                                             <event name="OnKeyDown"></event>
@@ -604,24 +604,6 @@
                                             <event name="OnSetFocus"></event>
                                             <event name="OnSize"></event>
                                             <event name="OnUpdateUI"></event>
-                                            <object class="dataViewListColumn" expanded="1">
-                                                <property name="label">Patch</property>
-                                                <property name="name">m_fileListToggleColumn</property>
-                                                <property name="permission">protected</property>
-                                                <property name="type">Toggle</property>
-                                            </object>
-                                            <object class="dataViewListColumn" expanded="1">
-                                                <property name="label">Name</property>
-                                                <property name="name">m_fileListNameColumn</property>
-                                                <property name="permission">protected</property>
-                                                <property name="type">Text</property>
-                                            </object>
-                                            <object class="dataViewListColumn" expanded="1">
-                                                <property name="label">Size</property>
-                                                <property name="name">m_fileListSizeColumn</property>
-                                                <property name="permission">protected</property>
-                                                <property name="type">Text</property>
-                                            </object>
                                         </object>
                                     </object>
                                 </object>

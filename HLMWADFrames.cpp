@@ -104,10 +104,7 @@ BaseExploreFrame::BaseExploreFrame( wxWindow* parent, wxWindowID id, const wxStr
 	wxBoxSizer* bSizer3;
 	bSizer3 = new wxBoxSizer( wxVERTICAL );
 	
-	m_fileListCtrl = new wxDataViewListCtrl( m_listPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE );
-	m_fileListToggleColumn = m_fileListCtrl->AppendToggleColumn( _("Patch") ); 
-	m_fileListNameColumn = m_fileListCtrl->AppendTextColumn( _("Name") ); 
-	m_fileListSizeColumn = m_fileListCtrl->AppendTextColumn( _("Size") ); 
+	m_fileListCtrl = new wxDataViewCtrl( m_listPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE );
 	bSizer3->Add( m_fileListCtrl, 1, wxEXPAND, 5 );
 	
 	

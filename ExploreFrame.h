@@ -57,6 +57,7 @@ class ExploreFrame : public BaseExploreFrame
 		wxFileHistory m_fileHistory;
 		bool m_preparingPatch;
 		std::set<size_t> m_patchEntries;
+		wxDataViewColumn* m_fileListToggleColumn;
 	
 		const WADArchiveEntry& GetSelectedEntry() const;
 

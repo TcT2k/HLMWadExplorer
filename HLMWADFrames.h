@@ -59,10 +59,7 @@ class BaseExploreFrame : public wxFrame
 		wxMenu* help;
 		wxSplitterWindow* m_mainSplitter;
 		wxPanel* m_listPanel;
-		wxDataViewListCtrl* m_fileListCtrl;
-		wxDataViewColumn* m_fileListToggleColumn;
-		wxDataViewColumn* m_fileListNameColumn;
-		wxDataViewColumn* m_fileListSizeColumn;
+		wxDataViewCtrl* m_fileListCtrl;
 		wxPanel* m_previewPanel;
 		wxSimplebook* m_previewBookCtrl;
 		
