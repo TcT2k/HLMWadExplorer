@@ -215,6 +215,7 @@ void ExploreFrame::OpenFile(const wxString& filename)
 {
 	m_archive = new WADArchive(filename);
 	wxObjectDataPtr<FileDataModel> model(new FileDataModel(this, m_archive.get()));
+	m_fileListCtrl->UnselectAll();
 	m_fileListCtrl->AssociateModel(model.get());
 	m_fileListCtrl->Refresh();
 	m_menubar->Enable(ID_EXTRACT, true);
@@ -225,6 +226,12 @@ void ExploreFrame::OpenFile(const wxString& filename)
 	m_menubar->Enable(ID_PATCH_PREPARE, true);
 	UpdateTitle();
 	CheckBackup();
+	if (m_archive->GetEntryCount() > 0)
+	{
+		m_fileListCtrl->Select(wxDataViewItem((void*)1));
+		wxDataViewEvent evt;
+		OnFileListSelectionChanged(evt);
+	}
 
 	m_fileHistory.AddFileToHistory(filename);
 	m_fileHistory.Save(*wxConfigBase::Get());
