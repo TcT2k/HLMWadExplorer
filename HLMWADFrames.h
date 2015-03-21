@@ -72,6 +72,7 @@ class BaseExploreFrame : public wxFrame
 		virtual void OnQuitClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnExtractClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnReplaceClicked( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnFindClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnAddClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnDeleteClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnPatchApplyClicked( wxCommandEvent& event ) { event.Skip(); }
