@@ -23,6 +23,8 @@ set(SRCS ${SRCS}
 	TexturePack.cpp
 	TexturePackPanel.h
 	TexturePackPanel.cpp
+	StringTablePanel.h
+	StringTablePanel.cpp
 	)
 
 add_executable(HLMWADExplorer WIN32 MACOSX_BUNDLE ${SRCS})

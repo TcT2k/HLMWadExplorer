@@ -34,6 +34,7 @@
 #include <wx/button.h>
 #include <wx/statbox.h>
 #include <wx/textctrl.h>
+#include <wx/grid.h>
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -179,6 +180,23 @@ class TextPanel : public wxPanel
 		
 		TextPanel( wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 500,300 ), long style = wxTAB_TRAVERSAL ); 
 		~TextPanel();
+	
+};
+
+///////////////////////////////////////////////////////////////////////////////
+/// Class BaseStringTablePanel
+///////////////////////////////////////////////////////////////////////////////
+class BaseStringTablePanel : public wxPanel 
+{
+	private:
+	
+	protected:
+		wxGrid* m_grid;
+	
+	public:
+		
+		BaseStringTablePanel( wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( 500,300 ), long style = wxTAB_TRAVERSAL ); 
+		~BaseStringTablePanel();
 	
 };
 

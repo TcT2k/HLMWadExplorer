@@ -26,6 +26,7 @@
 
 #include "TexturePack.h"
 #include "TexturePackPanel.h"
+#include "StringTablePanel.h"
 
 class FileDataModel : public wxDataViewVirtualListModel
 {
@@ -125,6 +126,7 @@ ExploreFrame::ExploreFrame( wxWindow* parent ):
 	m_previewBookCtrl->AddPage(new ImagePanel(m_previewBookCtrl), "Image", false);
 	m_previewBookCtrl->AddPage(new TexturePackPanel(m_previewBookCtrl), "Texture", false);
 	m_previewBookCtrl->AddPage(new TextPanel(m_previewBookCtrl), "Text", false);
+	m_previewBookCtrl->AddPage(new StringTablePanel(m_previewBookCtrl), "String Table", false);
 
 	m_preparingPatch = false;
 
@@ -585,6 +587,16 @@ void ExploreFrame::OnFileListSelectionChanged( wxDataViewEvent& event )
 		text.Replace("\r\n", "\n");
 #endif
 		textPanel->m_textCtrl->SetValue(text);
+	}
+	else if (fn.GetName().IsSameAs("hlm2_localization"))
+	{
+		m_previewBookCtrl->ChangeSelection(4);
+
+		StringTablePanel* stringPanel = (StringTablePanel*) m_previewBookCtrl->GetCurrentPage();
+		wxMemoryOutputStream oStr;
+		m_archive->Extract(entry, oStr);
+		wxStreamBuffer* buffer = oStr.GetOutputStreamBuffer();
+		stringPanel->LoadStringTable(buffer->GetBufferStart(), buffer->GetBufferSize());
 	}
 	else
 		m_previewBookCtrl->ChangeSelection(0);

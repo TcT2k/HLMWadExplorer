@@ -369,3 +369,43 @@ TextPanel::TextPanel( wxWindow* parent, wxWindowID id, const wxPoint& pos, const
 TextPanel::~TextPanel()
 {
 }
+
+BaseStringTablePanel::BaseStringTablePanel( wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style ) : wxPanel( parent, id, pos, size, style )
+{
+	wxBoxSizer* bSizer13;
+	bSizer13 = new wxBoxSizer( wxVERTICAL );
+	
+	m_grid = new wxGrid( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0 );
+	
+	// Grid
+	m_grid->CreateGrid( 1, 1 );
+	m_grid->EnableEditing( false );
+	m_grid->EnableGridLines( true );
+	m_grid->EnableDragGridSize( false );
+	m_grid->SetMargins( 0, 0 );
+	
+	// Columns
+	m_grid->EnableDragColMove( false );
+	m_grid->EnableDragColSize( true );
+	m_grid->SetColLabelSize( 30 );
+	m_grid->SetColLabelAlignment( wxALIGN_CENTRE, wxALIGN_CENTRE );
+	
+	// Rows
+	m_grid->EnableDragRowSize( true );
+	m_grid->SetRowLabelSize( 180 );
+	m_grid->SetRowLabelAlignment( wxALIGN_LEFT, wxALIGN_CENTRE );
+	
+	// Label Appearance
+	
+	// Cell Defaults
+	m_grid->SetDefaultCellAlignment( wxALIGN_LEFT, wxALIGN_TOP );
+	bSizer13->Add( m_grid, 1, wxALL|wxEXPAND, 5 );
+	
+	
+	this->SetSizer( bSizer13 );
+	this->Layout();
+}
+
+BaseStringTablePanel::~BaseStringTablePanel()
+{
+}
