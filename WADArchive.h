@@ -85,6 +85,12 @@ private:
 class WADArchive
 {
 public:
+	enum WADFormat
+	{
+		FmtHM2,
+		FmtHM1
+	};
+
 	WADArchive(const wxString& fileName, bool createFile = false);
 
 	size_t GetEntryCount() const
@@ -129,7 +135,14 @@ public:
 		return m_modified;
 	}
 
+	bool GetReadOnly() const
+	{
+		return m_readOnly;
+	}
+
 private:
+	bool m_readOnly;
+	WADFormat m_format;
 	wxString m_fileName;
 	wxVector<WADArchiveEntry> m_entries;
 	wxFileOffset m_dataOffset;

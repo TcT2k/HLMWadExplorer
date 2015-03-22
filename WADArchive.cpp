@@ -12,6 +12,8 @@
 #include <wx/mstream.h>
 
 WADArchive::WADArchive(const wxString& fileName, bool createFile) :
+	m_readOnly(false),
+	m_format(FmtHM2),
 	m_fileName(fileName),
 	m_modified(false)
 {
@@ -21,33 +23,70 @@ WADArchive::WADArchive(const wxString& fileName, bool createFile) :
 
 void WADArchive::ParseFile()
 {
+	wxFileName wadFN(m_fileName);
+	if (wadFN.GetName().IsSameAs("HotlineMiami_GL", false))
+		m_format = FmtHM1;
+
 	wxFileInputStream iStr(m_fileName);
 
-	wxUint32 fileCount;
-	iStr.Read(&fileCount, sizeof(fileCount));
-	wxLogDebug("Found %d files in wad:", fileCount, m_fileName);
-
-	m_entries.reserve(fileCount);
-
-	for (size_t fileIndex = 0; fileIndex < fileCount; fileIndex++)
+	if (m_format == FmtHM2)
 	{
-		wxUint32 fileNameLength;
-		iStr.Read(&fileNameLength, sizeof(fileNameLength));
-		
-		wxCharBuffer fnBuf(fileNameLength);
-		iStr.Read(fnBuf.data(), fileNameLength);
-		wxString fileName(fnBuf);
+		wxUint32 fileCount;
+		iStr.Read(&fileCount, sizeof(fileCount));
+		wxLogDebug("Found %d files in wad:", fileCount, m_fileName);
 
-		wxUint64 fileSize;
-		iStr.Read(&fileSize, sizeof(fileSize));
+		m_entries.reserve(fileCount);
 
-		wxUint64 fileOffset;
-		iStr.Read(&fileOffset, sizeof(fileOffset));
+		for (size_t fileIndex = 0; fileIndex < fileCount; fileIndex++)
+		{
+			wxUint32 fileNameLength;
+			iStr.Read(&fileNameLength, sizeof(fileNameLength));
 
-		m_entries.push_back( WADArchiveEntry(fileName, fileSize, fileOffset) );
+			wxCharBuffer fnBuf(fileNameLength);
+			iStr.Read(fnBuf.data(), fileNameLength);
+			wxString fileName(fnBuf);
+
+			wxUint64 fileSize;
+			iStr.Read(&fileSize, sizeof(fileSize));
+
+			wxUint64 fileOffset;
+			iStr.Read(&fileOffset, sizeof(fileOffset));
+
+			m_entries.push_back(WADArchiveEntry(fileName, fileSize, fileOffset));
+		}
+
+		m_dataOffset = iStr.SeekI(0, wxFromCurrent);
 	}
+	else if (m_format == FmtHM1)
+	{
+		m_readOnly = true;
 
-	m_dataOffset = iStr.SeekI(0, wxFromCurrent);
+		wxUint32 dataOffset;
+		iStr.Read(&dataOffset, sizeof(dataOffset));
+
+		m_dataOffset = dataOffset;
+
+		wxUint32 dataValue;
+		iStr.Read(&dataValue, sizeof(dataValue));
+
+		while (iStr.TellI() < dataOffset)
+		{
+			wxUint32 fileNameLength;
+			iStr.Read(&fileNameLength, sizeof(fileNameLength));
+
+			wxCharBuffer fnBuf(fileNameLength);
+			iStr.Read(fnBuf.data(), fileNameLength);
+			wxString fileName(fnBuf);
+
+			wxUint32 fileSize;
+			iStr.Read(&fileSize, sizeof(fileSize));
+
+			wxUint32 fileOffset;
+			iStr.Read(&fileOffset, sizeof(fileOffset));
+
+			m_entries.push_back(WADArchiveEntry(fileName, fileSize, fileOffset));
+		}
+	}
 }
 
 bool WADArchive::Extract(const WADArchiveEntry& entry, const wxString& targetFileName)

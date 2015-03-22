@@ -299,12 +299,12 @@ void ExploreFrame::OpenFile(const wxString& filename)
 	m_fileListCtrl->AssociateModel(model.get());
 	m_fileListCtrl->Refresh();
 	m_menubar->Enable(ID_EXTRACT, true);
-	m_menubar->Enable(wxID_ADD, true);
-	m_menubar->Enable(wxID_SAVE, true);
-	m_menubar->Enable(wxID_SAVEAS, true);
+	m_menubar->Enable(wxID_ADD, !m_archive->GetReadOnly());
+	m_menubar->Enable(wxID_SAVE, !m_archive->GetReadOnly());
+	m_menubar->Enable(wxID_SAVEAS, !m_archive->GetReadOnly());
 	m_menubar->Enable(wxID_FIND, true);
-	m_menubar->Enable(ID_PATCH_APPLY, true);
-	m_menubar->Enable(ID_PATCH_PREPARE, true);
+	m_menubar->Enable(ID_PATCH_APPLY, !m_archive->GetReadOnly());
+	m_menubar->Enable(ID_PATCH_PREPARE, !m_archive->GetReadOnly());
 	UpdateTitle();
 	CheckBackup();
 	if (m_archive->GetEntryCount() > 0)
@@ -527,9 +527,9 @@ void ExploreFrame::OnQuitClicked( wxCommandEvent& event )
 
 void ExploreFrame::OnFileListSelectionChanged( wxDataViewEvent& event )
 {
-	m_menubar->Enable(ID_REPLACE, m_fileListCtrl->GetSelectedItemsCount() > 0);
+	m_menubar->Enable(ID_REPLACE, m_fileListCtrl->GetSelectedItemsCount() > 0 && !m_archive->GetReadOnly());
 	m_menubar->Enable(ID_EXTRACT, m_fileListCtrl->GetSelectedItemsCount() > 0);
-	m_menubar->Enable(wxID_DELETE, m_fileListCtrl->GetSelectedItemsCount() > 0);
+	m_menubar->Enable(wxID_DELETE, m_fileListCtrl->GetSelectedItemsCount() > 0 && !m_archive->GetReadOnly());
 	
 	if (m_fileListCtrl->GetSelectedItemsCount() != 1)
 		return;
@@ -570,7 +570,8 @@ void ExploreFrame::OnFileListSelectionChanged( wxDataViewEvent& event )
 		texPanel->LoadTexture(iStr, m_archive->ExtractBitmap(imgEntry));
 	}
 	else if (fileExt.IsSameAs("fnt", false) ||
-			 fileExt.IsSameAs("vsh", false)||
+			fileExt.IsSameAs("ini", false) ||
+			fileExt.IsSameAs("vsh", false) ||
 			 fileExt.IsSameAs("fsh", false))
 	{
 		m_previewBookCtrl->ChangeSelection(3);
