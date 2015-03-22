@@ -29,23 +29,33 @@ void WADArchive::ParseFile()
 
 	wxFileInputStream iStr(m_fileName);
 
-	if (m_format == FmtHM2)
+	if (m_format == FmtHM1)
 	{
-		wxUint32 fileCount;
-		iStr.Read(&fileCount, sizeof(fileCount));
-		wxLogDebug("Found %d files in wad:", fileCount, m_fileName);
+		m_readOnly = true;
 
-		m_entries.reserve(fileCount);
+		wxUint32 dataOffset;
+		iStr.Read(&dataOffset, sizeof(dataOffset));
 
-		for (size_t fileIndex = 0; fileIndex < fileCount; fileIndex++)
+		m_dataOffset = dataOffset;
+	}
+
+	wxUint32 fileCount;
+	iStr.Read(&fileCount, sizeof(fileCount));
+	wxLogDebug("Found %d files in wad: %s", fileCount, m_fileName);
+
+	m_entries.reserve(fileCount);
+
+	for (size_t fileIndex = 0; fileIndex < fileCount; fileIndex++)
+	{
+		wxUint32 fileNameLength;
+		iStr.Read(&fileNameLength, sizeof(fileNameLength));
+
+		wxCharBuffer fnBuf(fileNameLength);
+		iStr.Read(fnBuf.data(), fileNameLength);
+		wxString fileName(fnBuf);
+
+		if (m_format == FmtHM2)
 		{
-			wxUint32 fileNameLength;
-			iStr.Read(&fileNameLength, sizeof(fileNameLength));
-
-			wxCharBuffer fnBuf(fileNameLength);
-			iStr.Read(fnBuf.data(), fileNameLength);
-			wxString fileName(fnBuf);
-
 			wxUint64 fileSize;
 			iStr.Read(&fileSize, sizeof(fileSize));
 
@@ -54,30 +64,7 @@ void WADArchive::ParseFile()
 
 			m_entries.push_back(WADArchiveEntry(fileName, fileSize, fileOffset));
 		}
-
-		m_dataOffset = iStr.SeekI(0, wxFromCurrent);
-	}
-	else if (m_format == FmtHM1)
-	{
-		m_readOnly = true;
-
-		wxUint32 dataOffset;
-		iStr.Read(&dataOffset, sizeof(dataOffset));
-
-		m_dataOffset = dataOffset;
-
-		wxUint32 dataValue;
-		iStr.Read(&dataValue, sizeof(dataValue));
-
-		while (iStr.TellI() < dataOffset)
-		{
-			wxUint32 fileNameLength;
-			iStr.Read(&fileNameLength, sizeof(fileNameLength));
-
-			wxCharBuffer fnBuf(fileNameLength);
-			iStr.Read(fnBuf.data(), fileNameLength);
-			wxString fileName(fnBuf);
-
+		else if (m_format == FmtHM1) {
 			wxUint32 fileSize;
 			iStr.Read(&fileSize, sizeof(fileSize));
 
@@ -87,6 +74,9 @@ void WADArchive::ParseFile()
 			m_entries.push_back(WADArchiveEntry(fileName, fileSize, fileOffset));
 		}
 	}
+
+	if (m_format == FmtHM2)
+		m_dataOffset = iStr.SeekI(0, wxFromCurrent);
 }
 
 bool WADArchive::Extract(const WADArchiveEntry& entry, const wxString& targetFileName)
