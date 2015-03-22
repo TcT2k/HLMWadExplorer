@@ -98,6 +98,10 @@ ExploreFrame::ExploreFrame( wxWindow* parent ):
 	m_backupAvailable(false)
 {
 	UpdateTitle();
+#if defined(__WXMSW__)
+	SetIcon(wxIcon("APPICON"));
+#endif
+
 	m_menubar->Enable(ID_EXTRACT, false);
 	m_menubar->Enable(wxID_SAVE, false);
 	m_menubar->Enable(wxID_SAVEAS, false);

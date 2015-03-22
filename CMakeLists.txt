@@ -25,6 +25,8 @@ set(SRCS ${SRCS}
 	TexturePackPanel.cpp
 	StringTablePanel.h
 	StringTablePanel.cpp
+
+	appicon.rc
 	)
 
 add_executable(HLMWADExplorer WIN32 MACOSX_BUNDLE ${SRCS})
