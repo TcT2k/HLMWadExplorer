@@ -189,7 +189,7 @@ void ExploreFrame::OnFindNext(wxFindDialogEvent& event)
 			}
 		}
 	} else {
-		for (size_t index = startIndex - 1; index > 0; index--)
+		for (int index = startIndex - 1; index > 0; index--)
 		{
 			if (ItemMatches(index, *event.GetDialog()->GetData()))
 			{
