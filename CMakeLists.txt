@@ -25,9 +25,29 @@ set(SRCS ${SRCS}
 	TexturePackPanel.cpp
 	StringTablePanel.h
 	StringTablePanel.cpp
-
-	appicon.rc
 	)
+	
+if (APPLE)
+	add_custom_command(
+		OUTPUT ${${PROJECT_NAME}_BINARY_DIR}/appicon.icns
+		COMMAND iconutil -c icns -o ${${PROJECT_NAME}_BINARY_DIR}/appicon.icns ${CMAKE_SOURCE_DIR}/appicon.iconset
+		DEPENDS appicon.iconset
+		COMMENT "Building application icon..."
+		)
+
+	set(SRCS ${SRCS}
+		${${PROJECT_NAME}_BINARY_DIR}/appicon.icns
+		)
+	set(MACOSX_BUNDLE_ICON_FILE appicon.icns)
+	SET_SOURCE_FILES_PROPERTIES(
+		appicon.icns
+		PROPERTIES
+		MACOSX_PACKAGE_LOCATION Resources)
+elseif(WIN32)
+	set(SRCS ${SRCS}
+		appicon.rc
+	)
+endif()
 
 add_executable(HLMWADExplorer WIN32 MACOSX_BUNDLE ${SRCS})
 target_link_libraries(HLMWADExplorer ${wxWidgets_LIBRARIES})
