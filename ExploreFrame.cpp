@@ -229,6 +229,8 @@ void ExploreFrame::OnAboutClicked( wxCommandEvent& event )
 	aboutInfo.SetCopyright("(C) 2015");
 	aboutInfo.SetWebSite("https://github.com/TcT2k/HLMWadExplorer");
 	aboutInfo.AddDeveloper("Tobias Taschner");
+	aboutInfo.AddArtist("LightVelox");
+	aboutInfo.AddArtist("Everaldo Coelho");
 	wxAboutBox(aboutInfo);
 }
 
