@@ -20,6 +20,7 @@
 #include <wx/font.h>
 #include <wx/colour.h>
 #include <wx/settings.h>
+#include <wx/toolbar.h>
 #include <wx/dataview.h>
 #include <wx/sizer.h>
 #include <wx/panel.h>
@@ -58,6 +59,7 @@ class BaseExploreFrame : public wxFrame
 		wxMenu* resource;
 		wxMenu* m_patchMenu;
 		wxMenu* help;
+		wxToolBar* m_toolBar;
 		wxSplitterWindow* m_mainSplitter;
 		wxPanel* m_listPanel;
 		wxDataViewCtrl* m_fileListCtrl;

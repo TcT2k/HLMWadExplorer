@@ -103,10 +103,13 @@ ExploreFrame::ExploreFrame( wxWindow* parent ):
 #endif
 
 	m_menubar->Enable(ID_EXTRACT, false);
+	m_toolBar->EnableTool(ID_EXTRACT, false);
 	m_menubar->Enable(wxID_SAVE, false);
+	m_toolBar->EnableTool(wxID_SAVE, false);
 	m_menubar->Enable(wxID_SAVEAS, false);
 	m_menubar->Enable(wxID_FIND, false);
 	m_menubar->Enable(ID_PATCH_APPLY, false);
+	m_toolBar->EnableTool(ID_PATCH_APPLY, false);
 	m_menubar->Enable(ID_PATCH_PREPARE, false);
 	m_menubar->Enable(ID_PATCH_CREATE, false);
 
@@ -305,11 +308,14 @@ void ExploreFrame::OpenFile(const wxString& filename)
 	m_fileListCtrl->AssociateModel(model.get());
 	m_fileListCtrl->Refresh();
 	m_menubar->Enable(ID_EXTRACT, true);
+	m_toolBar->EnableTool(ID_EXTRACT, true);
 	m_menubar->Enable(wxID_ADD, !m_archive->GetReadOnly());
 	m_menubar->Enable(wxID_SAVE, !m_archive->GetReadOnly());
+	m_toolBar->EnableTool(wxID_SAVE, !m_archive->GetReadOnly());
 	m_menubar->Enable(wxID_SAVEAS, !m_archive->GetReadOnly());
 	m_menubar->Enable(wxID_FIND, true);
 	m_menubar->Enable(ID_PATCH_APPLY, !m_archive->GetReadOnly());
+	m_toolBar->EnableTool(ID_PATCH_APPLY, !m_archive->GetReadOnly());
 	m_menubar->Enable(ID_PATCH_PREPARE, !m_archive->GetReadOnly());
 	UpdateTitle();
 	CheckBackup();
@@ -535,6 +541,7 @@ void ExploreFrame::OnFileListSelectionChanged( wxDataViewEvent& event )
 {
 	m_menubar->Enable(ID_REPLACE, m_fileListCtrl->GetSelectedItemsCount() > 0 && !m_archive->GetReadOnly());
 	m_menubar->Enable(ID_EXTRACT, m_fileListCtrl->GetSelectedItemsCount() > 0);
+	m_toolBar->EnableTool(ID_EXTRACT, m_fileListCtrl->GetSelectedItemsCount() > 0);
 	m_menubar->Enable(wxID_DELETE, m_fileListCtrl->GetSelectedItemsCount() > 0 && !m_archive->GetReadOnly());
 	
 	if (m_fileListCtrl->GetSelectedItemsCount() != 1)

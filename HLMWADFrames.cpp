@@ -7,6 +7,9 @@
 
 #include "HLMWADFrames.h"
 
+#include "art_embedded/ark_addfile.png.h"
+#include "art_embedded/ark_extract.png.h"
+
 ///////////////////////////////////////////////////////////////////////////
 
 BaseExploreFrame::BaseExploreFrame( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxFrame( parent, id, title, pos, size, style )
@@ -99,6 +102,25 @@ BaseExploreFrame::BaseExploreFrame( wxWindow* parent, wxWindowID id, const wxStr
 	m_menubar->Append( help, _("&Help") ); 
 	
 	this->SetMenuBar( m_menubar );
+	
+	m_toolBar = this->CreateToolBar( wxTB_HORIZONTAL|wxTB_NODIVIDER, wxID_ANY ); 
+	wxToolBarToolBase* openTool; 
+	openTool = m_toolBar->AddTool( wxID_OPEN, _("Open"), wxArtProvider::GetBitmap( wxART_FILE_OPEN, wxART_TOOLBAR ), wxNullBitmap, wxITEM_NORMAL, _("Open"), wxEmptyString, NULL ); 
+	
+	wxToolBarToolBase* saveTool; 
+	saveTool = m_toolBar->AddTool( wxID_SAVE, _("Save"), wxArtProvider::GetBitmap( wxART_FILE_SAVE, wxART_TOOLBAR ), wxNullBitmap, wxITEM_NORMAL, _("Save"), wxEmptyString, NULL ); 
+	
+	m_toolBar->AddSeparator(); 
+	
+	wxToolBarToolBase* extractTool; 
+	extractTool = m_toolBar->AddTool( ID_EXTRACT, _("Extract"), ark_extract_png_to_wx_bitmap(), wxNullBitmap, wxITEM_NORMAL, _("Extract"), wxEmptyString, NULL ); 
+	
+	m_toolBar->AddSeparator(); 
+	
+	wxToolBarToolBase* applyTool; 
+	applyTool = m_toolBar->AddTool( ID_PATCH_APPLY, _("Apply Patch"), ark_addfile_png_to_wx_bitmap(), wxNullBitmap, wxITEM_NORMAL, _("Apply Patch"), wxEmptyString, NULL ); 
+	
+	m_toolBar->Realize(); 
 	
 	wxBoxSizer* bSizer2;
 	bSizer2 = new wxBoxSizer( wxHORIZONTAL );
@@ -399,7 +421,7 @@ BaseStringTablePanel::BaseStringTablePanel( wxWindow* parent, wxWindowID id, con
 	
 	// Cell Defaults
 	m_grid->SetDefaultCellAlignment( wxALIGN_LEFT, wxALIGN_TOP );
-	bSizer13->Add( m_grid, 1, wxALL|wxEXPAND, 5 );
+	bSizer13->Add( m_grid, 1, wxEXPAND, 5 );
 	
 	
 	this->SetSizer( bSizer13 );
