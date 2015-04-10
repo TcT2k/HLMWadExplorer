@@ -27,6 +27,7 @@
 #include "TexturePack.h"
 #include "TexturePackPanel.h"
 #include "StringTablePanel.h"
+#include "VersionInfo.h"
 
 class FileDataModel : public wxDataViewVirtualListModel
 {
@@ -169,6 +170,7 @@ void ExploreFrame::OnAboutClicked( wxCommandEvent& event )
 	aboutInfo.AddDeveloper("Tobias Taschner");
 	aboutInfo.AddArtist("LightVelox");
 	aboutInfo.AddArtist("Everaldo Coelho");
+	aboutInfo.SetVersion(APP_VERSION);
 	wxAboutBox(aboutInfo);
 }
 

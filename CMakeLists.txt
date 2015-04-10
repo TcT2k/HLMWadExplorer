@@ -2,7 +2,11 @@ cmake_minimum_required(VERSION 2.8)
 
 project(HLMWADExplorer)
 
-find_package(wxWidgets COMPONENTS core base adv REQUIRED)
+SET(CPACK_PACKAGE_VERSION_MAJOR "0")
+SET(CPACK_PACKAGE_VERSION_MINOR "6")
+SET(CPACK_PACKAGE_VERSION_PATCH "3")
+
+find_package(wxWidgets 3.0 COMPONENTS core base adv REQUIRED)
 
 include( ${wxWidgets_USE_FILE} )
 
@@ -49,6 +53,12 @@ elseif(WIN32)
 	)
 endif()
 
+# Prepare version information
+configure_file(VersionInfo.h.in
+	${${PROJECT_NAME}_BINARY_DIR}/VersionInfo.h)
+
+include_directories(${${PROJECT_NAME}_BINARY_DIR})
+
 add_executable(HLMWADExplorer WIN32 MACOSX_BUNDLE ${SRCS})
 target_link_libraries(HLMWADExplorer ${wxWidgets_LIBRARIES})
 
@@ -68,9 +78,6 @@ else()
 endif()
 include(InstallRequiredSystemLibraries)
 
-SET(CPACK_PACKAGE_VERSION_MAJOR "0")
-SET(CPACK_PACKAGE_VERSION_MINOR "6")
-SET(CPACK_PACKAGE_VERSION_PATCH "3")
 SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 SET(CPACK_GENERATOR "ZIP")
