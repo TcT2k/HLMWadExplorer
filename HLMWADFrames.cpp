@@ -123,6 +123,14 @@ BaseExploreFrame::BaseExploreFrame( wxWindow* parent, wxWindowID id, const wxStr
 	m_toolBar->Realize(); 
 	
 	m_searchTimer.SetOwner( this, wxID_ANY );
+	wxBoxSizer* bSizer14;
+	bSizer14 = new wxBoxSizer( wxVERTICAL );
+	
+	m_toolbarSeperatorPanel = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxSize( -1,1 ), wxTAB_TRAVERSAL );
+	m_toolbarSeperatorPanel->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_BTNSHADOW ) );
+	
+	bSizer14->Add( m_toolbarSeperatorPanel, 0, wxEXPAND, 5 );
+	
 	wxBoxSizer* bSizer2;
 	bSizer2 = new wxBoxSizer( wxHORIZONTAL );
 	
@@ -131,10 +139,15 @@ BaseExploreFrame::BaseExploreFrame( wxWindow* parent, wxWindowID id, const wxStr
 	
 	m_listPanel = new wxPanel( m_mainSplitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	wxBoxSizer* bSizer3;
-	bSizer3 = new wxBoxSizer( wxVERTICAL );
+	bSizer3 = new wxBoxSizer( wxHORIZONTAL );
 	
-	m_fileListCtrl = new wxDataViewCtrl( m_listPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE );
+	m_fileListCtrl = new wxDataViewCtrl( m_listPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE|wxNO_BORDER );
 	bSizer3->Add( m_fileListCtrl, 1, wxEXPAND, 5 );
+	
+	m_splitterSeperatorPanel = new wxPanel( m_listPanel, wxID_ANY, wxDefaultPosition, wxSize( 1,-1 ), wxTAB_TRAVERSAL );
+	m_splitterSeperatorPanel->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_BTNSHADOW ) );
+	
+	bSizer3->Add( m_splitterSeperatorPanel, 0, wxEXPAND, 5 );
 	
 	
 	m_listPanel->SetSizer( bSizer3 );
@@ -155,7 +168,10 @@ BaseExploreFrame::BaseExploreFrame( wxWindow* parent, wxWindowID id, const wxStr
 	bSizer2->Add( m_mainSplitter, 1, wxEXPAND, 5 );
 	
 	
-	this->SetSizer( bSizer2 );
+	bSizer14->Add( bSizer2, 1, wxEXPAND, 5 );
+	
+	
+	this->SetSizer( bSizer14 );
 	this->Layout();
 	
 	this->Centre( wxBOTH );
@@ -219,10 +235,15 @@ BaseTexturePackPanel::BaseTexturePackPanel( wxWindow* parent, wxWindowID id, con
 	
 	m_panel3 = new wxPanel( m_splitter2, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
 	wxBoxSizer* bSizer5;
-	bSizer5 = new wxBoxSizer( wxVERTICAL );
+	bSizer5 = new wxBoxSizer( wxHORIZONTAL );
 	
-	m_textureListBox = new wxListBox( m_panel3, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, 0 ); 
+	m_textureListBox = new wxListBox( m_panel3, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, 0|wxNO_BORDER ); 
 	bSizer5->Add( m_textureListBox, 1, wxEXPAND, 5 );
+	
+	m_splitterSeperatorPanel = new wxPanel( m_panel3, wxID_ANY, wxDefaultPosition, wxSize( 1,-1 ), wxTAB_TRAVERSAL );
+	m_splitterSeperatorPanel->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_BTNSHADOW ) );
+	
+	bSizer5->Add( m_splitterSeperatorPanel, 0, wxEXPAND, 5 );
 	
 	
 	m_panel3->SetSizer( bSizer5 );

@@ -23,9 +23,9 @@
 #include <wx/srchctrl.h>
 #include <wx/toolbar.h>
 #include <wx/timer.h>
+#include <wx/panel.h>
 #include <wx/dataview.h>
 #include <wx/sizer.h>
-#include <wx/panel.h>
 #include <wx/simplebook.h>
 #include <wx/splitter.h>
 #include <wx/frame.h>
@@ -64,9 +64,11 @@ class BaseExploreFrame : public wxFrame
 		wxToolBar* m_toolBar;
 		wxSearchCtrl* m_searchCtrl;
 		wxTimer m_searchTimer;
+		wxPanel* m_toolbarSeperatorPanel;
 		wxSplitterWindow* m_mainSplitter;
 		wxPanel* m_listPanel;
 		wxDataViewCtrl* m_fileListCtrl;
+		wxPanel* m_splitterSeperatorPanel;
 		wxPanel* m_previewPanel;
 		wxSimplebook* m_previewBookCtrl;
 		
@@ -118,6 +120,7 @@ class BaseTexturePackPanel : public wxPanel
 		wxSplitterWindow* m_splitter2;
 		wxPanel* m_panel3;
 		wxListBox* m_textureListBox;
+		wxPanel* m_splitterSeperatorPanel;
 		wxPanel* m_panel4;
 		wxStaticText* m_staticText1;
 		wxSpinCtrl* m_frameSpinCtrl;
