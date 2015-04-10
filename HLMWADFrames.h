@@ -20,7 +20,9 @@
 #include <wx/font.h>
 #include <wx/colour.h>
 #include <wx/settings.h>
+#include <wx/srchctrl.h>
 #include <wx/toolbar.h>
+#include <wx/timer.h>
 #include <wx/dataview.h>
 #include <wx/sizer.h>
 #include <wx/panel.h>
@@ -60,6 +62,8 @@ class BaseExploreFrame : public wxFrame
 		wxMenu* m_patchMenu;
 		wxMenu* help;
 		wxToolBar* m_toolBar;
+		wxSearchCtrl* m_searchCtrl;
+		wxTimer m_searchTimer;
 		wxSplitterWindow* m_mainSplitter;
 		wxPanel* m_listPanel;
 		wxDataViewCtrl* m_fileListCtrl;
@@ -75,13 +79,16 @@ class BaseExploreFrame : public wxFrame
 		virtual void OnQuitClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnExtractClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnReplaceClicked( wxCommandEvent& event ) { event.Skip(); }
-		virtual void OnFindClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnAddClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnDeleteClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnPatchApplyClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnPatchPrepareClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnPatchCreateClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnAboutClicked( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnSearchCtrlButton( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnSearchCtrlText( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnSearchCtrlEnter( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnSearchTimer( wxTimerEvent& event ) { event.Skip(); }
 		virtual void OnFileListSelectionChanged( wxDataViewEvent& event ) { event.Skip(); }
 		virtual void OnFileListDoubleClick( wxMouseEvent& event ) { event.Skip(); }
 		

@@ -32,7 +32,7 @@ class FileDataModel : public wxDataViewVirtualListModel
 {
 public:
 	FileDataModel(ExploreFrame* frame, WADArchive* archive) :
-		wxDataViewVirtualListModel(archive->GetEntryCount()),
+		wxDataViewVirtualListModel(archive->GetFilteredEntryCount()),
 		m_frame(frame),
 		m_archive(archive)
 	{
@@ -55,7 +55,7 @@ public:
 
 	void GetValueByRow(wxVariant &variant, unsigned int row, unsigned int col) const
 	{
-		const WADArchiveEntry& entry = m_archive->GetEntry(row);
+		const WADArchiveEntry& entry = m_archive->GetFilteredEntry(row);
 		switch (col)
 		{
 			case 0:
@@ -107,11 +107,14 @@ ExploreFrame::ExploreFrame( wxWindow* parent ):
 	m_menubar->Enable(wxID_SAVE, false);
 	m_toolBar->EnableTool(wxID_SAVE, false);
 	m_menubar->Enable(wxID_SAVEAS, false);
-	m_menubar->Enable(wxID_FIND, false);
 	m_menubar->Enable(ID_PATCH_APPLY, false);
 	m_toolBar->EnableTool(ID_PATCH_APPLY, false);
 	m_menubar->Enable(ID_PATCH_PREPARE, false);
 	m_menubar->Enable(ID_PATCH_CREATE, false);
+	m_ignoreSearch = true;
+
+	m_toolBar->InsertStretchableSpace(6);
+	m_toolBar->Realize();
 
 	m_fileListToggleColumn = m_fileListCtrl->AppendToggleColumn(_("Patch"), 0, wxDATAVIEW_CELL_INERT, 24);
 	m_fileListCtrl->AppendTextColumn(_("Name"), 1, wxDATAVIEW_CELL_INERT, 250);
@@ -137,13 +140,6 @@ ExploreFrame::ExploreFrame( wxWindow* parent ):
 
 	m_preparingPatch = false;
 
-	// Init find
-	m_findData.reset(new wxFindReplaceData(wxFR_DOWN));
-	m_findDialog = NULL;
-	Bind(wxEVT_FIND, &ExploreFrame::OnFind, this);
-	Bind(wxEVT_FIND_NEXT, &ExploreFrame::OnFindNext, this);
-	Bind(wxEVT_FIND_CLOSE, &ExploreFrame::OnFindClose, this);
-
 	Bind(wxEVT_MENU, &ExploreFrame::OnRecentFileClicked, this, wxID_FILE1, wxID_FILE9);
 
 	wxPersistenceManager::Get().RegisterAndRestore(this);
@@ -151,7 +147,6 @@ ExploreFrame::ExploreFrame( wxWindow* parent ):
 
 ExploreFrame::~ExploreFrame()
 {
-	wxDELETE(m_findDialog);
 }
 
 void ExploreFrame::SelectItem(size_t index)
@@ -162,63 +157,6 @@ void ExploreFrame::SelectItem(size_t index)
 	m_fileListCtrl->EnsureVisible(item);
 	wxDataViewEvent evt;
 	OnFileListSelectionChanged(evt);
-}
-
-bool ExploreFrame::ItemMatches(size_t index, const wxFindReplaceData& findReplaceData)
-{
-	wxString entryFN = m_archive->GetEntry(index).GetFileName();
-	wxString findStr = findReplaceData.GetFindString();
-	if (!(findReplaceData.GetFlags() & wxFR_MATCHCASE))
-	{
-		entryFN.MakeLower();
-		findStr.MakeLower();
-	}
-
-	return entryFN.Find(findStr) != wxNOT_FOUND;
-}
-
-void ExploreFrame::OnFindNext(wxFindDialogEvent& event)
-{
-	int matchIndex = wxNOT_FOUND;
-	size_t startIndex = (size_t)m_fileListCtrl->GetSelection().GetID() - 1;
-	if (event.GetFlags() & wxFR_DOWN)
-	{
-		for (size_t index = startIndex + 1; index < m_archive->GetEntryCount(); index++)
-		{
-			if (ItemMatches(index, *event.GetDialog()->GetData()))
-			{
-				matchIndex = index;
-				break;
-			}
-		}
-	} else {
-		for (int index = startIndex - 1; index > 0; index--)
-		{
-			if (ItemMatches(index, *event.GetDialog()->GetData()))
-			{
-				matchIndex = index;
-				break;
-			}
-		}
-	}
-	if (matchIndex == wxNOT_FOUND)
-	{
-		wxMessageBox(_("Entry not found"), _("Warning"), wxICON_WARNING | wxOK, event.GetDialog());
-	} else {
-		SelectItem(matchIndex);
-	}
-}
-
-void ExploreFrame::OnFind(wxFindDialogEvent& event)
-{
-	SelectItem(0);
-	OnFindNext(event);
-}
-
-void ExploreFrame::OnFindClose(wxFindDialogEvent& event)
-{
-	m_findDialog = NULL;
-	event.GetDialog()->Destroy();
 }
 
 void ExploreFrame::OnAboutClicked( wxCommandEvent& event )
@@ -232,6 +170,48 @@ void ExploreFrame::OnAboutClicked( wxCommandEvent& event )
 	aboutInfo.AddArtist("LightVelox");
 	aboutInfo.AddArtist("Everaldo Coelho");
 	wxAboutBox(aboutInfo);
+}
+
+void ExploreFrame::OnSearchCtrlButton(wxCommandEvent& event)
+{
+	OnSearchCtrlEnter(event);
+}
+
+void ExploreFrame::OnSearchCtrlText(wxCommandEvent& event)
+{
+	if (m_searchTimer.IsRunning())
+		m_searchTimer.Stop();
+
+	if (!m_ignoreSearch)
+		m_searchTimer.StartOnce(500);
+}
+
+void ExploreFrame::OnSearchCtrlEnter(wxCommandEvent& event)
+{
+	if (m_searchTimer.IsRunning())
+		m_searchTimer.Stop();
+
+	ApplyFilter(m_searchCtrl->GetValue());
+}
+
+void ExploreFrame::OnSearchTimer(wxTimerEvent& event)
+{
+	ApplyFilter(m_searchCtrl->GetValue());
+}
+
+void ExploreFrame::ApplyFilter(const wxString& filter)
+{
+	if (!m_archive || m_ignoreSearch)
+		return;
+
+	wxLogDebug("Applying filter: %s", filter);
+
+	if (!m_archive->ApplyFilter(filter))
+		wxLogError(_("No items found"));
+
+	static_cast<FileDataModel*>(m_fileListCtrl->GetModel())->Reset(m_archive->GetFilteredEntryCount());
+	if (m_archive->GetFilteredEntryCount() > 0)
+		SelectItem(0);
 }
 
 void ExploreFrame::OnWindowClose( wxCloseEvent& event )
@@ -304,6 +284,11 @@ void ExploreFrame::OnOpenClicked( wxCommandEvent& event )
 
 void ExploreFrame::OpenFile(const wxString& filename)
 {
+	m_ignoreSearch = true;
+	m_searchCtrl->SetValue("");
+	m_searchCtrl->Enable();
+	m_ignoreSearch = false;
+
 	m_archive = new WADArchive(filename);
 	wxObjectDataPtr<FileDataModel> model(new FileDataModel(this, m_archive.get()));
 	m_fileListCtrl->UnselectAll();
@@ -315,13 +300,12 @@ void ExploreFrame::OpenFile(const wxString& filename)
 	m_menubar->Enable(wxID_SAVE, !m_archive->GetReadOnly());
 	m_toolBar->EnableTool(wxID_SAVE, !m_archive->GetReadOnly());
 	m_menubar->Enable(wxID_SAVEAS, !m_archive->GetReadOnly());
-	m_menubar->Enable(wxID_FIND, true);
 	m_menubar->Enable(ID_PATCH_APPLY, !m_archive->GetReadOnly());
 	m_toolBar->EnableTool(ID_PATCH_APPLY, !m_archive->GetReadOnly());
 	m_menubar->Enable(ID_PATCH_PREPARE, !m_archive->GetReadOnly());
 	UpdateTitle();
 	CheckBackup();
-	if (m_archive->GetEntryCount() > 0)
+	if (m_archive->GetFilteredEntryCount() > 0)
 		SelectItem(0);
 
 	m_fileHistory.AddFileToHistory(filename);
@@ -376,7 +360,7 @@ void ExploreFrame::OnRestoreClicked( wxCommandEvent& event )
 const WADArchiveEntry& ExploreFrame::GetSelectedEntry() const
 {
 	size_t index = (size_t) m_fileListCtrl->GetSelection().GetID() - 1;
-	return m_archive->GetEntry(index);
+	return m_archive->GetFilteredEntry(index);
 }
 
 void ExploreFrame::OnExtractClicked( wxCommandEvent& event )
@@ -401,7 +385,7 @@ void ExploreFrame::OnExtractClicked( wxCommandEvent& event )
 
 			for (auto it = selectedItems.begin(); it != selectedItems.end(); ++it)
 			{
-				const WADArchiveEntry& entry = m_archive->GetEntry((size_t) it->GetID() - 1);
+				const WADArchiveEntry& entry = m_archive->GetFilteredEntry((size_t) it->GetID() - 1);
 				wxFileName targetFileName(entry.GetFileName(), wxPATH_UNIX);
 				targetFileName.Normalize(wxPATH_NORM_ALL, dirDlg.GetPath());
 				wxLogDebug("Extracting to: %s", targetFileName.GetFullPath());
@@ -487,17 +471,6 @@ void ExploreFrame::OnReplaceClicked( wxCommandEvent& event )
 	}
 }
 
-void ExploreFrame::OnFindClicked(wxCommandEvent& event)
-{
-	if (!m_findDialog)
-	{
-		m_findDialog = new wxFindReplaceDialog(this, m_findData.get(), _("Find"), wxFR_NOWHOLEWORD);
-		m_findDialog->Show();
-	}
-	else
-		m_findDialog->SetFocus();
-}
-
 void ExploreFrame::OnAddClicked( wxCommandEvent& event )
 {
 	wxFileDialog fileDlg(this, _("Select file to add"), wxString(), wxString(), "*.*", wxFD_DEFAULT_STYLE | wxFD_FILE_MUST_EXIST);
@@ -552,7 +525,7 @@ void ExploreFrame::OnFileListSelectionChanged( wxDataViewEvent& event )
 	wxBusyCursor busyCursor;
 
 	size_t index = (size_t)m_fileListCtrl->GetSelection().GetID() - 1;
-	const WADArchiveEntry& entry = m_archive->GetEntry(index);
+	const WADArchiveEntry& entry = m_archive->GetFilteredEntry(index);
 	wxLogDebug("Selected: %s", entry.GetFileName());
 
 	wxFileName fn(entry.GetFileName(), wxPATH_UNIX);

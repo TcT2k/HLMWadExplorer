@@ -77,6 +77,8 @@ void WADArchive::ParseFile()
 
 	if (m_format == FmtHM2)
 		m_dataOffset = iStr.SeekI(0, wxFromCurrent);
+
+	ApplyFilter("");
 }
 
 bool WADArchive::Extract(const WADArchiveEntry& entry, const wxString& targetFileName)
@@ -242,4 +244,30 @@ void WADArchive::Patch(const WADArchive& patchArchive, const WADArchiveEntry& pa
 	}
 
 	m_entries.push_back(WADArchiveEntry(patchEntry, &patchArchive));
+}
+
+bool WADArchive::ApplyFilter(const wxString& filter)
+{
+	m_filteredEntries.clear();
+	m_filteredEntries.reserve(m_entries.size());
+
+	wxString lowerFilter = filter.Lower();
+
+	for (auto entry = m_entries.begin(); entry != m_entries.end(); ++entry)
+	{
+		if (lowerFilter.empty() ||
+			entry->GetFileName().Lower().Find(lowerFilter) != wxNOT_FOUND)
+			m_filteredEntries.push_back(&(*entry));
+	}
+
+	if (m_filteredEntries.empty())
+	{
+		// Reset filter
+		ApplyFilter("");
+
+		return false;
+	} else {
+		wxLogDebug("%d items for filter %s", m_filteredEntries.size(), filter);
+		return true;
+	}
 }

@@ -140,11 +140,25 @@ public:
 		return m_readOnly;
 	}
 
+	/// Returns false if no entries matched the filter
+	bool ApplyFilter(const wxString& filter);
+
+	const WADArchiveEntry& GetFilteredEntry(size_t index) const
+	{
+		return *m_filteredEntries[index];
+	}
+
+	size_t GetFilteredEntryCount() const
+	{
+		return m_filteredEntries.size();
+	}
+
 private:
 	bool m_readOnly;
 	WADFormat m_format;
 	wxString m_fileName;
 	wxVector<WADArchiveEntry> m_entries;
+	wxVector<WADArchiveEntry*> m_filteredEntries;
 	wxFileOffset m_dataOffset;
 	bool m_modified;
 
