@@ -43,13 +43,17 @@ if (APPLE)
 		${${PROJECT_NAME}_BINARY_DIR}/appicon.icns
 		)
 	set(MACOSX_BUNDLE_ICON_FILE appicon.icns)
+	set(MACOSX_BUNDLE_BUNDLE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
 	SET_SOURCE_FILES_PROPERTIES(
 		appicon.icns
 		PROPERTIES
 		MACOSX_PACKAGE_LOCATION Resources)
 elseif(WIN32)
+configure_file(VersionInfo.rc.in
+	${${PROJECT_NAME}_BINARY_DIR}/VersionInfo.rc)
 	set(SRCS ${SRCS}
 		appicon.rc
+		${${PROJECT_NAME}_BINARY_DIR}/VersionInfo.rc
 	)
 endif()
 
