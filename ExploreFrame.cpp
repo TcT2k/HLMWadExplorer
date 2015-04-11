@@ -464,7 +464,7 @@ void ExploreFrame::OnReplaceClicked( wxCommandEvent& event )
 		}
 
 		size_t index = (size_t) m_fileListCtrl->GetSelection().GetID() - 1;
-		m_archive->Replace(index, fileDlg.GetPath());
+		m_archive->ReplaceFiltered(index, fileDlg.GetPath());
 		static_cast<FileDataModel*>(m_fileListCtrl->GetModel())->RowChanged(index);
 		wxDataViewEvent evt(wxEVT_DATAVIEW_SELECTION_CHANGED);
 		OnFileListSelectionChanged(evt);

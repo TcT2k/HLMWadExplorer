@@ -153,6 +153,8 @@ public:
 		return m_filteredEntries.size();
 	}
 
+	void ReplaceFiltered(size_t itemIndex, const wxString& sourceFileName);
+
 private:
 	bool m_readOnly;
 	WADFormat m_format;

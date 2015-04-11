@@ -231,6 +231,12 @@ void WADArchive::Replace(size_t itemIndex, const wxString& sourceFileName)
 	m_modified = true;
 }
 
+void WADArchive::ReplaceFiltered(size_t itemIndex, const wxString& sourceFileName)
+{
+	m_filteredEntries[itemIndex]->SetSourceFileName(sourceFileName);
+	m_modified = true;
+}
+
 void WADArchive::Patch(const WADArchive& patchArchive, const WADArchiveEntry& patchEntry)
 {
 	// find existing entry
