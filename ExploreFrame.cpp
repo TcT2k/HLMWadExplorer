@@ -326,7 +326,14 @@ void ExploreFrame::OnSaveClicked( wxCommandEvent& event )
 	{
 		wxBusyInfo busyInfo(_("Writing file..."));
 		wxBusyCursor busyCursor;
+		wxString fileName = m_archive->GetFileName();
+
+		// Save archive
 		m_archive->Save();
+
+		// Reopen archive
+		OpenFile(fileName);
+
 		UpdateTitle();
 	}
 }
