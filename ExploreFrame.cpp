@@ -117,10 +117,10 @@ ExploreFrame::ExploreFrame( wxWindow* parent ):
 	m_toolBar->InsertStretchableSpace(6);
 	m_toolBar->Realize();
 
-	m_fileListToggleColumn = m_fileListCtrl->AppendToggleColumn(_("Patch"), 0, wxDATAVIEW_CELL_INERT, 24);
+	m_fileListToggleColumn = m_fileListCtrl->AppendToggleColumn(_("Patch"), 0, wxDATAVIEW_CELL_ACTIVATABLE, 
+		wxDLG_UNIT(this, wxSize(16, -1)).GetWidth(), wxALIGN_CENTER, wxCOL_HIDDEN);
 	m_fileListCtrl->AppendTextColumn(_("Name"), 1, wxDATAVIEW_CELL_INERT, 250);
 	m_fileListCtrl->AppendTextColumn(_("Size"), 2, wxDATAVIEW_CELL_INERT, -1, wxALIGN_RIGHT);
-	m_fileListToggleColumn->SetHidden(true);
 
 	m_fileHistory.UseMenu(m_fileMenu);
 	m_fileHistory.Load(*wxConfigBase::Get());
