@@ -308,7 +308,10 @@ void ExploreFrame::OpenFile(const wxString& filename)
 	UpdateTitle();
 	CheckBackup();
 	if (m_archive->GetFilteredEntryCount() > 0)
+	{
 		SelectItem(0);
+		m_fileListCtrl->SetFocus();
+	}
 
 	m_fileHistory.AddFileToHistory(filename);
 	m_fileHistory.Save(*wxConfigBase::Get());
