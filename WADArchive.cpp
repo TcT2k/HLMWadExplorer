@@ -273,7 +273,7 @@ bool WADArchive::ApplyFilter(const wxString& filter)
 
 		return false;
 	} else {
-		wxLogDebug("%d items for filter %s", m_filteredEntries.size(), filter);
+		wxLogDebug("%zd items for filter %s", m_filteredEntries.size(), filter);
 		return true;
 	}
 }
