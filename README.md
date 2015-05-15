@@ -14,18 +14,22 @@ Features
 
 Usage
 -----
-* Start app
-* Open WAD
-* Extract or preview files
+1. [Download](https://github.com/TcT2k/HLMWadExplorer/releases/latest) & install
+2. Start app
+3. Open WAD
+4. Extract or preview files
 
-Requirements
-------------
+Compiling manually
+------------------
+Requires:
 * [wxWidgets][2]: 3.0.0  or newer
 * [CMake][3]: 3.0.0  or newer
 
-Compiling
------------
-Use CMake to create project files requires wxWidgets 3.0+ to build
+Then from a terminal run these commands:
+```
+cmake .
+make
+```
 
 [1]: http://hotlinemiami.com/
 [2]: http://www.wxwidgets.org
