@@ -1,7 +1,7 @@
 /*
 ** HLMWadExplorer
 **
-** Coypright (C) 2015 Tobias Taschner <github@tc84.de>
+** Copyright (C) 2015 Tobias Taschner <github@tc84.de>
 **
 ** Licensed under GPL v3 or later
 */
