@@ -21,6 +21,8 @@ Usage
 
 Compiling manually
 ------------------
+[![Build Status](https://travis-ci.org/TcT2k/HLMWadExplorer.svg?branch=master)](https://travis-ci.org/TcT2k/HLMWadExplorer)
+
 Requires:
 * [wxWidgets][2]: 3.0.0  or newer
 * [CMake][3]: 3.0.0  or newer
