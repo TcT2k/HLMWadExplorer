@@ -1,7 +1,8 @@
 # This is the control file for Travis continuous integration system.
+# Create build
 language: cpp
 
-compiler: gcc
+compiler: clang
 
 branches:
     only:
@@ -19,4 +20,4 @@ before_install:
 
 script:
     - cmake .
-	- cmake --build .
+    - cmake --build .
