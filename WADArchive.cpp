@@ -1,7 +1,7 @@
 /*
 ** HLMWadExplorer
 **
-** Coypright (C) 2015 Tobias Taschner <github@tc84.de>
+** Copyright (C) 2015 Tobias Taschner <github@tc84.de>
 **
 ** Licensed under GPL v3 or later
 */
@@ -273,7 +273,7 @@ bool WADArchive::ApplyFilter(const wxString& filter)
 
 		return false;
 	} else {
-		wxLogDebug("%ud items for filter %s", m_filteredEntries.size(), filter);
+		wxLogDebug("%u items for filter %s", m_filteredEntries.size(), filter);
 		return true;
 	}
 }
