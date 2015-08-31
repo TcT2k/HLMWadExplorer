@@ -1,0 +1,22 @@
+# This is the control file for Travis continuous integration system.
+language: cpp
+
+compiler: gcc
+
+branches:
+    only:
+        - master
+
+notifications:
+    email:
+        recipients:
+            - github@tc84.de
+        on_success: change
+        on_failure: change
+
+before_install:
+    - sudo apt-get install -y libwxbase3.0-dev libwxgtk3.0-dev
+
+script:
+    - cmake .
+	- cmake --build .
