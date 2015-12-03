@@ -75,6 +75,8 @@ class ExploreFrame : public BaseExploreFrame
 	
 		void CheckBackup();
 
+		wxString GetBackupFileName() const;
+
 		wxString GetGameBasePath() const;
 
 		void SelectItem(size_t index);

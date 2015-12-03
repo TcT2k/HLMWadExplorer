@@ -141,6 +141,11 @@ public:
 		return m_readOnly;
 	}
 
+	WADFormat GetFormat() const
+	{
+		return m_format;
+	}
+
 	/// Returns false if no entries matched the filter
 	bool ApplyFilter(const wxString& filter);
 

@@ -361,7 +361,7 @@ void ExploreFrame::OnRestoreClicked( wxCommandEvent& event )
 	{
 		wxBusyInfo busyInfo(_("Restoring from backup..."));
 		wxBusyCursor busyCursor;
-		if (!wxCopyFile(m_archive->GetFileName() + "_backup", m_archive->GetFileName(), true))
+		if (!wxCopyFile(GetBackupFileName(), m_archive->GetFileName(), true))
 			wxLogError(_("Backup could not be restored"));
 		else {
 			wxString restoredFN = m_archive->GetFileName();
@@ -733,7 +733,7 @@ bool ExploreFrame::ConfirmBackup()
 		{
 			wxBusyInfo busyInfo(_("Creating backup..."));
 			wxBusyCursor busyCursor;
-			if (!wxCopyFile(m_archive->GetFileName(), m_archive->GetFileName() + "_backup"))
+			if (!wxCopyFile(m_archive->GetFileName(), GetBackupFileName()))
 			{
 				wxLogError(_("Backup could not be created"));
 				return false;
@@ -753,6 +753,15 @@ bool ExploreFrame::ConfirmBackup()
 
 void ExploreFrame::CheckBackup()
 {
-	m_backupAvailable = wxFileExists(m_archive->GetFileName() + "_backup");
+	m_backupAvailable = wxFileExists(GetBackupFileName());
 	m_menubar->Enable(ID_RESTORE, m_backupAvailable);
 }
+
+wxString ExploreFrame::GetBackupFileName() const
+{
+	wxString backupFileName = m_archive->GetFileName() + "_backup";
+	if (m_archive->GetFormat() == WADArchive::FmtHM2v2)
+		backupFileName += "V2";
+	return backupFileName;
+}
+
