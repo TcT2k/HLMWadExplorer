@@ -35,8 +35,6 @@ void WADArchive::ParseFile()
 	if (strcmp(fileId, "AGAR") == 0)
 	{
 		m_format = FmtHM2v2;
-		// TODO: implement write support
-		m_readOnly = true;
 
 		wxUint32 majorVer;
 		wxUint32 minorVer;
@@ -216,6 +214,19 @@ bool WADArchive::Save()
 
 bool WADArchive::Save(wxOutputStream& oStr)
 {
+	if (m_format == FmtHM2v2)
+	{
+		// Write header
+		const char* id = "AGAR";
+		oStr.Write(id, 4);
+		wxUint32 majorVer = 1;
+		wxUint32 minorVer = 1;
+		oStr.Write(&majorVer, sizeof(majorVer));
+		oStr.Write(&minorVer, sizeof(minorVer));
+		wxUint32 extHeaderSize = 0;
+		oStr.Write(&extHeaderSize, sizeof(extHeaderSize));
+	}
+
 	// Write directory
 	wxUint32 fileCount = m_entries.size();
 	oStr.Write(&fileCount, sizeof(fileCount));
@@ -236,6 +247,15 @@ bool WADArchive::Save(wxOutputStream& oStr)
 		oStr.Write(&currentDataOffset, sizeof(currentDataOffset));
 		
 		currentDataOffset += entry->GetSize();
+	}
+
+	if (m_format == FmtHM2v2)
+	{
+		// Write empty directory map
+		wxUint32 dummyDirCount = 0;
+		oStr.Write(&dummyDirCount, sizeof(dummyDirCount));
+
+		currentDataOffset += 4;
 	}
 	
 	// Write file data
