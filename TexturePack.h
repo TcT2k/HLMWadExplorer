@@ -57,9 +57,15 @@ class TexturePack: public wxVector<Texture>
 public:
 	TexturePack(wxInputStream& iStr);
 
+	wxUint32 GetVersion() const
+	{
+		return m_version;
+	}
+
 private:
 	wxUint32 m_width;
 	wxUint32 m_height;
+	wxUint32 m_version;
 
 	void Parse(wxInputStream& iStr);
 

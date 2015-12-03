@@ -22,22 +22,27 @@ void TexturePack::Parse(wxInputStream& iStr)
 	clear();
 
 	// Check header
-	wxUint8 version;
-	iStr.Read(&version, sizeof(version));
+	wxUint8 idLen;
+	iStr.Read(&idLen, sizeof(idLen));
 	char id[16];
 	id[15] = 0;
 	iStr.Read(&id, 15);
-	if (version != 0xF || wxStrcmp(id, "AGTEXTUREPACKER") != 0)
+	if (idLen != 0xF || wxStrcmp(id, "AGTEXTUREPACKER") != 0)
 	{
 		wxLogWarning("Invalid texture file format");
 		return;
 	}
 
-	// Skip unknown value
-	iStr.SeekI(4, wxFromCurrent);
+	iStr.Read(&m_version, sizeof(m_version));
 
-	iStr.Read(&m_width, sizeof(m_width));
-	iStr.Read(&m_height, sizeof(m_height));
+	if (m_version >= 2)
+	{
+		// Skip slice count
+		iStr.SeekI(4, wxFromCurrent);
+	} else {
+		iStr.Read(&m_width, sizeof(m_width));
+		iStr.Read(&m_height, sizeof(m_height));
+	}
 
 	// Read textures until file ends
 	while (!iStr.Eof())
@@ -76,6 +81,10 @@ void Texture::Parse(wxInputStream& iStr)
 
 	for (wxUint32 frameIndex = 0; frameIndex < frameCount; frameIndex++)
 	{
+		// skip atlas index
+		if (m_pack->GetVersion() >= 2)
+			iStr.SeekI(4, wxFromCurrent);
+
 		push_back(Frame(iStr));
 	}
 }
