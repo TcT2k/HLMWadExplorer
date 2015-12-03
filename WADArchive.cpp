@@ -29,6 +29,26 @@ void WADArchive::ParseFile()
 
 	wxFileInputStream iStr(m_fileName);
 
+	char fileId[5];
+	iStr.Read(fileId, 4);
+	fileId[4] = 0;
+	if (strcmp(fileId, "AGAR") == 0)
+	{
+		m_format = FmtHM2v2;
+		// TODO: implement write support
+		m_readOnly = true;
+
+		wxUint32 majorVer;
+		wxUint32 minorVer;
+		iStr.Read(&majorVer, sizeof(majorVer));
+		iStr.Read(&minorVer, sizeof(minorVer));
+		wxUint32 extHeaderSize;
+		iStr.Read(&extHeaderSize, sizeof(extHeaderSize));
+		iStr.SeekI(extHeaderSize, wxFromCurrent);
+		wxLogDebug("Opened file format: %d.%d (%d bytes extra header data)", majorVer, minorVer, extHeaderSize);
+	} else
+		iStr.SeekI(0);
+
 	if (m_format == FmtHM1)
 	{
 		m_readOnly = true;
@@ -54,7 +74,7 @@ void WADArchive::ParseFile()
 		iStr.Read(fnBuf.data(), fileNameLength);
 		wxString fileName(fnBuf);
 
-		if (m_format == FmtHM2)
+		if (m_format != FmtHM1)
 		{
 			wxUint64 fileSize;
 			iStr.Read(&fileSize, sizeof(fileSize));
@@ -64,7 +84,8 @@ void WADArchive::ParseFile()
 
 			m_entries.push_back(WADArchiveEntry(fileName, fileSize, fileOffset));
 		}
-		else if (m_format == FmtHM1) {
+		else
+		{
 			wxUint32 fileSize;
 			iStr.Read(&fileSize, sizeof(fileSize));
 
@@ -75,7 +96,44 @@ void WADArchive::ParseFile()
 		}
 	}
 
-	if (m_format == FmtHM2)
+	if (m_format == FmtHM2v2)
+	{
+		// Parse directory table (currently unused but required to determine data offset)
+		wxUint32 dirCount;
+		iStr.Read(&dirCount, sizeof(dirCount));
+		for (int dirIndex = 0; dirIndex < dirCount; dirIndex++)
+		{
+			wxUint32 dirNameLength;
+			iStr.Read(&dirNameLength, sizeof(dirNameLength));
+
+			if (dirNameLength)
+			{
+				wxCharBuffer dirNameBuf(dirNameLength);
+				iStr.Read(dirNameBuf.data(), dirNameLength);
+				wxString dirName(dirNameBuf);
+			}
+
+			// Parse directory
+			wxUint32 entryCount;
+			iStr.Read(&entryCount, sizeof(entryCount));
+
+			for (int entryIndex = 0; entryIndex < entryCount; entryIndex++)
+			{
+				wxUint32 entryNameLength;
+				iStr.Read(&entryNameLength, sizeof(entryNameLength));
+
+				wxCharBuffer entryNameBuf(entryNameLength);
+				iStr.Read(entryNameBuf.data(), entryNameLength);
+				wxString entryName(entryNameBuf);
+
+				wxUint8 entryType;
+				iStr.Read(&entryType, sizeof(entryType));
+
+			}
+		}
+	}
+
+	if (m_format != FmtHM1)
 		m_dataOffset = iStr.SeekI(0, wxFromCurrent);
 
 	ApplyFilter("");

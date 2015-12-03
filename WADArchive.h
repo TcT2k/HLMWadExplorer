@@ -88,7 +88,8 @@ public:
 	enum WADFormat
 	{
 		FmtHM2,
-		FmtHM1
+		FmtHM1,
+		FmtHM2v2
 	};
 
 	WADArchive(const wxString& fileName, bool createFile = false);
