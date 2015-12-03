@@ -111,6 +111,8 @@ void Frame::Parse(wxInputStream& iStr)
 	iStr.Read(&offsetY, sizeof(offsetY));
 	m_offset = wxPoint(offsetX, offsetY);
 
-	// Skip additional data (timing data?, flags?)
-	iStr.SeekI(16, wxFromCurrent);
+	iStr.Read(&m_uStart, sizeof(m_uStart));
+	iStr.Read(&m_vStart, sizeof(m_vStart));
+	iStr.Read(&m_uEnd, sizeof(m_uEnd));
+	iStr.Read(&m_vEnd, sizeof(m_vEnd));
 }

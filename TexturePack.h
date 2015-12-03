@@ -28,9 +28,33 @@ public:
 		return m_size;
 	}
 
+	wxFloat32 GetUStart() const
+	{
+		return m_uStart;
+	}
+
+	wxFloat32 GetVStart() const
+	{
+		return m_vStart;
+	}
+
+	wxFloat32 GetUEnd() const
+	{
+		return m_uEnd;
+	}
+
+	wxFloat32 GetVEnd() const
+	{
+		return m_vEnd;
+	}
+
 private:
 	wxPoint m_offset;
 	wxSize m_size;
+	wxFloat32 m_uStart;
+	wxFloat32 m_vStart;
+	wxFloat32 m_uEnd;
+	wxFloat32 m_vEnd;
 
 	void Parse(wxInputStream& iStr);
 };

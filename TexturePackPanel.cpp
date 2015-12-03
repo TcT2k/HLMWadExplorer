@@ -62,6 +62,8 @@ void TexturePackPanel::OnFrameSpinCtrlChanged(wxSpinEvent& event)
 
 	m_sizeStaticText->SetLabel(wxString::Format("%dx%d", frame.GetSize().GetWidth(), frame.GetSize().GetHeight()));
 	m_offsetStaticText->SetLabel(wxString::Format("%d,%d", frame.GetOffset().x, frame.GetOffset().y));
+	m_uvStaticText->SetLabel(wxString::Format("%f,%f,%f,%f", frame.GetUStart(), frame.GetVStart(), 
+		frame.GetUEnd(), frame.GetVEnd()));
 
 	m_infoSizer->Layout();
 }

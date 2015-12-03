@@ -134,6 +134,8 @@ class BaseTexturePackPanel : public wxPanel
 		wxBoxSizer* m_infoSizer;
 		wxStaticText* m_staticText3;
 		wxSpinCtrl* m_zoomSpinCtrl;
+		wxStaticText* m_staticText9;
+		wxStaticText* m_uvStaticText;
 		wxStaticText* m_staticText4;
 		wxStaticText* m_sizeStaticText;
 		wxStaticText* m_staticText41;

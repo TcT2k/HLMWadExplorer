@@ -327,6 +327,17 @@ BaseTexturePackPanel::BaseTexturePackPanel( wxWindow* parent, wxWindowID id, con
 	
 	m_infoSizer->Add( 0, 0, 1, wxEXPAND, 5 );
 	
+	m_staticText9 = new wxStaticText( m_panel4, wxID_ANY, _("UV:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText9->Wrap( -1 );
+	m_infoSizer->Add( m_staticText9, 0, wxALIGN_CENTER|wxALL, 5 );
+	
+	m_uvStaticText = new wxStaticText( m_panel4, wxID_ANY, _("-"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_uvStaticText->Wrap( -1 );
+	m_infoSizer->Add( m_uvStaticText, 0, wxALIGN_CENTER|wxALL, 5 );
+	
+	
+	m_infoSizer->Add( 0, 0, 1, wxEXPAND, 5 );
+	
 	m_staticText4 = new wxStaticText( m_panel4, wxID_ANY, _("Size:"), wxDefaultPosition, wxDefaultSize, 0 );
 	m_staticText4->Wrap( -1 );
 	m_infoSizer->Add( m_staticText4, 0, wxALIGN_CENTER|wxALL, 5 );
