@@ -23,6 +23,9 @@ public:
 		SetAppDisplayName("HLM WAD Explorer");
 
 		ExploreFrame* frame = new ExploreFrame(NULL);
+		if (!frame->OpenBaseFile())
+			return false;
+
 		frame->Show();
 
 		return true;

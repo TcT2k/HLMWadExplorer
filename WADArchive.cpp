@@ -207,12 +207,12 @@ wxBitmap WADArchive::ExtractBitmap(const WADArchiveEntry& entry)
 		return wxBitmap(img);
 }
 
-bool WADArchive::Save()
+bool WADArchive::Write()
 {
-	return Save(m_fileName);
+	return Write(m_fileName);
 }
 
-bool WADArchive::Save(wxOutputStream& oStr)
+bool WADArchive::Write(wxOutputStream& oStr)
 {
 	if (m_format == FmtHM2v2)
 	{
@@ -267,14 +267,34 @@ bool WADArchive::Save(wxOutputStream& oStr)
 	return true;
 }
 
-bool WADArchive::Save(const wxString& targetFileName)
+bool WADArchive::Write(const wxString& targetFileName)
 {
 	wxTempFileOutputStream oStr(targetFileName);
 	if (!oStr.IsOk())
 		return false;
 	
-	if (Save(oStr))
+	if (Write(oStr))
 		return oStr.Commit();
+	else
+		return false;
+}
+
+bool WADArchive::CreatePatch(const wxString& targetFileName)
+{
+	WADArchive patchArchive(targetFileName, true);
+	patchArchive.m_format = FmtHM2v2;
+
+	for (auto entry = m_entries.begin(); entry != m_entries.end(); ++entry)
+	{
+		if (entry->GetStatus() != WADArchiveEntry::Entry_Original)
+			patchArchive.Add(WADArchiveEntry(*entry, this));
+	}
+
+	if (patchArchive.Write())
+	{
+		m_modified = false;
+		return true;
+	}
 	else
 		return false;
 }
@@ -306,28 +326,15 @@ void WADArchive::Add(const WADArchiveEntry& entry)
 void WADArchive::Replace(size_t itemIndex, const wxString& sourceFileName)
 {
 	m_entries[itemIndex].SetSourceFileName(sourceFileName);
+	m_entries[itemIndex].SetStatus(WADArchiveEntry::Entry_Replaced);
 	m_modified = true;
 }
 
 void WADArchive::ReplaceFiltered(size_t itemIndex, const wxString& sourceFileName)
 {
 	m_filteredEntries[itemIndex]->SetSourceFileName(sourceFileName);
+	m_filteredEntries[itemIndex]->SetStatus(WADArchiveEntry::Entry_Replaced);
 	m_modified = true;
-}
-
-void WADArchive::Patch(const WADArchive& patchArchive, const WADArchiveEntry& patchEntry)
-{
-	// find existing entry
-	for (auto entry = m_entries.begin(); entry != m_entries.end(); ++entry)
-	{
-		if (entry->GetFileName().IsSameAs(patchEntry.GetFileName()))
-		{
-			*entry = WADArchiveEntry(patchEntry, &patchArchive);
-			return;
-		}
-	}
-
-	m_entries.push_back(WADArchiveEntry(patchEntry, &patchArchive));
 }
 
 bool WADArchive::ApplyFilter(const wxString& filter)

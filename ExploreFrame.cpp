@@ -42,16 +42,13 @@ public:
 
 	virtual unsigned int GetColumnCount() const
 	{
-		return 3;
+		return 2;
 	}
 
 	// return type as reported by wxVariant
 	virtual wxString GetColumnType(unsigned int col) const
 	{
-		if (col == 0)
-			return "bool";
-		else
-			return wxString();
+		return wxString();
 	}
 
 	void GetValueByRow(wxVariant &variant, unsigned int row, unsigned int col) const
@@ -60,12 +57,9 @@ public:
 		switch (col)
 		{
 			case 0:
-				variant = m_frame->m_patchEntries.find(row) != m_frame->m_patchEntries.end();
-				break;
-			case 1:
 				variant = entry.GetFileName();
 				break;
-			case 2:
+			case 1:
 				variant = wxFileName::GetHumanReadableSize(wxULongLong(entry.GetSize()));
 				break;
 		}
@@ -74,18 +68,19 @@ public:
 
 	bool SetValueByRow(const wxVariant &variant, unsigned int row, unsigned int col)
 	{
-		if (col == 0)
-		{
-			if (variant.GetBool())
-				m_frame->m_patchEntries.insert(row);
-			else
-				m_frame->m_patchEntries.erase(row);
-			m_frame->m_menubar->Enable(ID_PATCH_CREATE, !m_frame->m_patchEntries.empty());
-
-			return true;
-		} else
-			return false;
+		return false;
 	}
+
+	bool GetAttrByRow(unsigned int row, unsigned int col,
+		wxDataViewItemAttr &attr) const
+	{
+		const WADArchiveEntry& entry = m_archive->GetFilteredEntry(row);
+		if (entry.GetStatus() != WADArchiveEntry::Entry_Original)
+			attr.SetBold(true);
+
+		return true;
+	}
+
 
 private:
 	ExploreFrame* m_frame;
@@ -95,8 +90,7 @@ private:
 
 ExploreFrame::ExploreFrame( wxWindow* parent ):
 	BaseExploreFrame( parent ),
-	m_archive(NULL),
-	m_backupAvailable(false)
+	m_archive(NULL)
 {
 	UpdateTitle();
 #if defined(__WXMSW__)
@@ -108,30 +102,20 @@ ExploreFrame::ExploreFrame( wxWindow* parent ):
 	m_menubar->Enable(wxID_SAVE, false);
 	m_toolBar->EnableTool(wxID_SAVE, false);
 	m_menubar->Enable(wxID_SAVEAS, false);
-	m_menubar->Enable(ID_PATCH_APPLY, false);
-	m_toolBar->EnableTool(ID_PATCH_APPLY, false);
-	m_menubar->Enable(ID_PATCH_PREPARE, false);
-	m_menubar->Enable(ID_PATCH_CREATE, false);
+	m_menubar->Enable(wxID_OPEN, false);
+	m_toolBar->EnableTool(wxID_OPEN, false);
 	m_ignoreSearch = true;
 
-	m_toolBar->InsertStretchableSpace(6);
+	m_toolBar->InsertStretchableSpace(5);
 	m_toolBar->Realize();
 
-	m_fileListToggleColumn = m_fileListCtrl->AppendToggleColumn(_("Patch"), 0, wxDATAVIEW_CELL_ACTIVATABLE, 
-		wxDLG_UNIT(this, wxSize(16, -1)).GetWidth(), wxALIGN_CENTER, wxCOL_HIDDEN);
-	m_fileListCtrl->AppendTextColumn(_("Name"), 1, wxDATAVIEW_CELL_INERT, 250);
-	m_fileListCtrl->AppendTextColumn(_("Size"), 2, wxDATAVIEW_CELL_INERT, -1, wxALIGN_RIGHT);
-	m_fileListToggleColumn->SetHidden(true);
+	m_fileListCtrl->AppendTextColumn(_("Name"), 0, wxDATAVIEW_CELL_INERT, 250);
+	m_fileListCtrl->AppendTextColumn(_("Size"), 1, wxDATAVIEW_CELL_INERT, -1, wxALIGN_RIGHT);
 
 	m_fileHistory.UseMenu(m_fileMenu);
-	m_fileHistory.Load(*wxConfigBase::Get());
-	if (m_fileHistory.GetCount() == 0)
 	{
-		// Initialize with default file names
-		wxFileName defaultFN(GetGameBasePath(), "hlm2_data_desktop.wad");
-		m_fileHistory.AddFileToHistory(defaultFN.GetFullPath());
-		defaultFN.SetName("hlm2_patch_desktop");
-		m_fileHistory.AddFileToHistory(defaultFN.GetFullPath());
+		wxConfigPathChanger pathChanger(wxConfigBase::Get(), "/FileHistory/PatchFiles/");
+		m_fileHistory.Load(*wxConfigBase::Get());
 	}
 
 	m_previewBookCtrl->AddPage(new wxPanel(m_previewBookCtrl), "General", true);
@@ -139,8 +123,6 @@ ExploreFrame::ExploreFrame( wxWindow* parent ):
 	m_previewBookCtrl->AddPage(new TexturePackPanel(m_previewBookCtrl), "Texture", false);
 	m_previewBookCtrl->AddPage(new TextPanel(m_previewBookCtrl), "Text", false);
 	m_previewBookCtrl->AddPage(new StringTablePanel(m_previewBookCtrl), "String Table", false);
-
-	m_preparingPatch = false;
 
 	Bind(wxEVT_MENU, &ExploreFrame::OnRecentFileClicked, this, wxID_FILE1, wxID_FILE9);
 
@@ -228,9 +210,8 @@ void ExploreFrame::OnWindowClose( wxCloseEvent& event )
 		{
 			case wxID_YES:
 			{
-				wxBusyInfo busyInfo(_("Writing file..."));
-				wxBusyCursor busyCursor;
-				m_archive->Save();
+				wxCommandEvent evt(wxID_SAVE);
+				OnSaveClicked(evt);
 				event.Skip();
 				break;
 			}
@@ -277,7 +258,7 @@ wxString ExploreFrame::GetGameBasePath() const
 
 void ExploreFrame::OnOpenClicked( wxCommandEvent& event )
 {
-	wxFileDialog fileDlg(this, _("Select WAD file"), GetGameBasePath(), wxString(), "*.wad", wxFD_DEFAULT_STYLE | wxFD_FILE_MUST_EXIST);
+	wxFileDialog fileDlg(this, _("Select patch WAD file"), GetGameBasePath(), wxString(), "*.patchwad", wxFD_DEFAULT_STYLE | wxFD_FILE_MUST_EXIST);
 
 	if (fileDlg.ShowModal() == wxID_OK)
 	{
@@ -285,14 +266,44 @@ void ExploreFrame::OnOpenClicked( wxCommandEvent& event )
 	}
 }
 
-void ExploreFrame::OpenFile(const wxString& filename)
+bool ExploreFrame::OpenBaseFile(bool forceSelection)
 {
+	bool doSelect = forceSelection;
+
+	wxString prevBasePath = wxConfigBase::Get()->Read("BaseFile");
+
+	wxFileName baseFileName;
+	if (prevBasePath.empty())
+		baseFileName.Assign(GetGameBasePath(), "hlm2_data_desktop.wad");
+	else
+		baseFileName.Assign(prevBasePath);
+
+	if (!baseFileName.Exists())
+	{
+		wxMessageDialog msgDlg(NULL, _("Could not find base game WAD. Please select main WAD to continue."),
+			_("Warning"), wxICON_WARNING | wxOK | wxCANCEL | wxCENTER);
+		msgDlg.SetOKLabel(_("Select"));
+		if (msgDlg.ShowModal() != wxID_OK)
+			return false;
+
+		doSelect = true;
+	}
+
+	if (doSelect)
+	{
+		wxFileDialog fileDlg(this, _("Select base game WAD file"), "", baseFileName.GetFullPath(), "*.wad", wxFD_DEFAULT_STYLE | wxFD_FILE_MUST_EXIST);
+		if (fileDlg.ShowModal() != wxID_OK)
+			return false;
+
+		baseFileName.Assign(fileDlg.GetPath());
+	}
+
 	m_ignoreSearch = true;
 	m_searchCtrl->SetValue("");
 	m_searchCtrl->Enable();
 	m_ignoreSearch = false;
 
-	m_archive = new WADArchive(filename);
+	m_archive = new WADArchive(baseFileName.GetFullPath());
 	wxObjectDataPtr<FileDataModel> model(new FileDataModel(this, m_archive.get()));
 	m_fileListCtrl->UnselectAll();
 	m_fileListCtrl->AssociateModel(model.get());
@@ -300,74 +311,106 @@ void ExploreFrame::OpenFile(const wxString& filename)
 	m_menubar->Enable(ID_EXTRACT, true);
 	m_toolBar->EnableTool(ID_EXTRACT, true);
 	m_menubar->Enable(wxID_ADD, !m_archive->GetReadOnly());
-	m_menubar->Enable(wxID_SAVE, !m_archive->GetReadOnly());
-	m_toolBar->EnableTool(wxID_SAVE, !m_archive->GetReadOnly());
-	m_menubar->Enable(wxID_SAVEAS, !m_archive->GetReadOnly());
-	m_menubar->Enable(ID_PATCH_APPLY, !m_archive->GetReadOnly());
-	m_toolBar->EnableTool(ID_PATCH_APPLY, !m_archive->GetReadOnly());
-	m_menubar->Enable(ID_PATCH_PREPARE, !m_archive->GetReadOnly());
-	UpdateTitle();
-	CheckBackup();
 	if (m_archive->GetFilteredEntryCount() > 0)
 	{
 		SelectItem(0);
 		m_fileListCtrl->SetFocus();
 	}
 
+	wxConfigBase::Get()->Write("BaseFile", baseFileName.GetFullPath());
+
+	return true;
+}
+
+void ExploreFrame::OpenFile(const wxString& filename)
+{
+	m_patchFileName.clear();
+
+	wxFileName patchFN(filename);
+	if (!patchFN.Exists())
+	{
+		wxLogError(_("File not found: %s"), patchFN.GetFullPath());
+		UpdateTitle();
+		return;
+	}
+
+	m_patchFileName = filename;
+
+	UpdateTitle();
+
 	m_fileHistory.AddFileToHistory(filename);
+
+	wxConfigPathChanger pathChanger(wxConfigBase::Get(), "/FileHistory/PatchFiles/");
 	m_fileHistory.Save(*wxConfigBase::Get());
 }
 
 void ExploreFrame::OnSaveClicked( wxCommandEvent& event )
 {
-	if (!ConfirmBackup())
-		return;
-	
-	if (wxMessageBox(_("Are you sure you want to overwrite the WAD?"), _("Warning"), wxICON_WARNING | wxYES_NO | wxNO_DEFAULT, this) == wxYES)
+	if (m_patchFileName.empty())
 	{
-		wxBusyInfo busyInfo(_("Writing file..."));
-		wxBusyCursor busyCursor;
-		wxString fileName = m_archive->GetFileName();
-
-		// Save archive
-		m_archive->Save();
-
-		// Reopen archive
-		OpenFile(fileName);
-
-		UpdateTitle();
+		OnSaveAsClicked(event);
+		return;
 	}
+	else
+		CreatePatch();
 }
 
 void ExploreFrame::OnSaveAsClicked( wxCommandEvent& event )
 {
-	wxFileName saveAsFN(m_archive->GetFileName());
-	
-	wxFileDialog fileDlg(this, _("Select destination filename"), saveAsFN.GetPath(), saveAsFN.GetFullName(), "*.wad", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+	wxString savePath;
+	if (m_patchFileName.empty())
+	{
+		wxFileName saveFN(wxStandardPaths::Get().GetDocumentsDir(), "");
+		saveFN.AppendDir("My Games");
+		saveFN.AppendDir("HotlineMiami2");
+		saveFN.AppendDir("Mods");
+		saveFN.Mkdir(wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
+
+		savePath = saveFN.GetFullPath();
+	}
+
+	wxFileDialog fileDlg(this, _("Select destination patch filename"), savePath, m_patchFileName, "*.patchwad", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 	if (fileDlg.ShowModal() == wxID_OK)
 	{
-		wxBusyInfo busyInfo(_("Writing file..."));
-		wxBusyCursor busyCursor;
-		m_archive->Save(fileDlg.GetPath());
-		OpenFile(fileDlg.GetPath());
+		m_patchFileName = fileDlg.GetPath();
+		if (CreatePatch())
+		{
+			m_fileHistory.AddFileToHistory(m_patchFileName);
+
+			wxConfigPathChanger pathChanger(wxConfigBase::Get(), "/FileHistory/PatchFiles/");
+			m_fileHistory.Save(*wxConfigBase::Get());
+		}
 	}
 }
 
-void ExploreFrame::OnRestoreClicked( wxCommandEvent& event )
+void ExploreFrame::OnSwitchBaseWadClicked(wxCommandEvent& event)
 {
-	wxMessageDialog msgDlg(this, _("Are you sure you wan't to restore this file from the backup copy?"), _("Warning"), wxICON_WARNING | wxYES_NO);
-	msgDlg.SetYesNoLabels(_("Restore"), _("Don't Restore"));
-	if (msgDlg.ShowModal() == wxID_YES)
+	OpenBaseFile(true);
+}
+
+bool ExploreFrame::CreatePatch()
+{
+	bool patchCreated;
 	{
-		wxBusyInfo busyInfo(_("Restoring from backup..."));
+		wxBusyInfo busyInfo(_("Writing file..."));
 		wxBusyCursor busyCursor;
-		if (!wxCopyFile(GetBackupFileName(), m_archive->GetFileName(), true))
-			wxLogError(_("Backup could not be restored"));
-		else {
-			wxString restoredFN = m_archive->GetFileName();
-			OpenFile(restoredFN);
+		patchCreated = m_archive->CreatePatch(m_patchFileName);
+	}
+
+	if (patchCreated)
+	{
+		UpdateTitle();
+		wxMessageDialog msgDlg(this, _("The patch WAD has been saved\n\nDo you want to open the folder it was saved to?"), _("Information"), wxICON_INFORMATION | wxOK | wxCANCEL);
+		msgDlg.SetOKCancelLabels(_("Open Folder"), wxID_CLOSE);
+		if (msgDlg.ShowModal() == wxID_OK)
+		{
+			wxFileName patchFN(m_patchFileName);
+			patchFN.SetFullName("");
+			wxLaunchDefaultApplication(patchFN.GetFullPath());
 		}
 	}
+
+	return patchCreated;
 }
 
 const WADArchiveEntry& ExploreFrame::GetSelectedEntry() const
@@ -496,7 +539,9 @@ void ExploreFrame::OnAddClicked( wxCommandEvent& event )
 		if (dlg.ShowModal() == wxID_OK)
 		{
 			newEntryName = dlg.GetValue();
-			m_archive->Add(WADArchiveEntry(newEntryName, fileDlg.GetPath()));
+			WADArchiveEntry entry(newEntryName, fileDlg.GetPath());
+			entry.SetStatus(WADArchiveEntry::Entry_Added);
+			m_archive->Add(entry);
 			static_cast<FileDataModel*>(m_fileListCtrl->GetModel())->RowAppended();
 
 			UpdateTitle();
@@ -539,6 +584,7 @@ void ExploreFrame::OnFileListSelectionChanged( wxDataViewEvent& event )
 
 	size_t index = (size_t)m_fileListCtrl->GetSelection().GetID() - 1;
 	const WADArchiveEntry& entry = m_archive->GetFilteredEntry(index);
+	m_menubar->Enable(wxID_DELETE, entry.GetStatus() == WADArchiveEntry::Entry_Added);
 	wxLogDebug("Selected: %s", entry.GetFileName());
 
 	wxFileName fn(entry.GetFileName(), wxPATH_UNIX);
@@ -606,98 +652,6 @@ void ExploreFrame::OnFileListDoubleClick( wxMouseEvent& event )
 // TODO: Implement OnFileListDoubleClick
 }
 
-void ExploreFrame::OnPatchApplyClicked(wxCommandEvent& event)
-{
-	if (!ConfirmBackup())
-		return;
-	
-	wxString patchFolder = wxStandardPaths::Get().GetDocumentsDir();
-	wxFileDialog fileDlg(this, _("Select patch wad to apply"), patchFolder, wxString(),
-		"*.patchwad", wxFD_DEFAULT_STYLE | wxFD_FILE_MUST_EXIST);
-	if (fileDlg.ShowModal() == wxID_OK)
-	{
-		WADArchive patchArchive(fileDlg.GetPath());
-
-		wxMessageDialog msgDlg(this, wxString::Format(_("Applying patch\n\nThis patch contains %d new/modified files.\nAre you sure you want to apply this patch?"),
-			patchArchive.GetEntryCount()), _("Warning"),
-			wxICON_WARNING | wxOK | wxCANCEL | wxCANCEL_DEFAULT);
-		msgDlg.SetOKLabel(_("Patch"));
-
-		if (msgDlg.ShowModal() == wxID_OK)
-		{
-			wxBusyCursor busyCursor;
-			wxBusyInfo busyInfo("Applying patch...");
-
-			// Apply patch entries
-			for (size_t patchIndex = 0; patchIndex < patchArchive.GetEntryCount(); patchIndex++)
-			{
-				m_archive->Patch(patchArchive, patchArchive.GetEntry(patchIndex));
-			}
-
-			wxString fileName = m_archive->GetFileName();
-
-			// Save archive
-			m_archive->Save();
-
-			// Reopen archive
-			OpenFile(fileName);
-
-			wxLogInfo(_("Patch applied"));
-		}
-	}
-}
-
-void ExploreFrame::OnPatchPrepareClicked(wxCommandEvent& event)
-{
-	if (m_preparingPatch)
-	{
-		m_fileListToggleColumn->SetHidden(true);
-		m_menubar->Check(ID_PATCH_PREPARE, false);
-		m_preparingPatch = false;
-		m_patchEntries.clear();
-		m_menubar->Enable(ID_PATCH_CREATE, false);
-	} else {
-		m_fileListToggleColumn->SetHidden(false);
-		m_menubar->Check(ID_PATCH_PREPARE, true);
-		m_preparingPatch = true;
-	}
-}
-
-void ExploreFrame::OnPatchCreateClicked(wxCommandEvent& event)
-{
-	wxString patchFolder = wxStandardPaths::Get().GetDocumentsDir();
-	wxFileDialog fileDlg(this, _("Select output for patch file"), patchFolder, wxString(),
-		"*.patchwad", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
-	if (fileDlg.ShowModal() == wxID_OK)
-	{
-		{
-			wxBusyCursor busyCursor;
-			wxBusyInfo busyInfo("Writing patch file...");
-
-			WADArchive patchArchive(fileDlg.GetPath(), true);
-
-			for (auto it = m_patchEntries.begin(); it != m_patchEntries.end(); ++it)
-			{
-				patchArchive.Add(WADArchiveEntry(m_archive->GetEntry(*it), m_archive.get()));
-			}
-			patchArchive.Save();
-		}
-
-		OnPatchPrepareClicked(event);
-
-		wxMessageDialog msgDlg(this, wxString::Format(_("Patch saved to %s"), fileDlg.GetPath()), _("Information"), wxICON_INFORMATION | wxYES_NO);
-		msgDlg.SetYesNoLabels(_("Open Folder"), wxID_CLOSE);
-
-		if (msgDlg.ShowModal() == wxID_YES)
-		{
-			wxFileName folderFN(fileDlg.GetPath());
-			folderFN.SetFullName(wxString());
-
-			wxLaunchDefaultApplication(folderFN.GetPath());
-		}
-	}
-}
-
 void ExploreFrame::UpdateTitle()
 {
 	bool modified = m_archive.get() && m_archive->IsModified();
@@ -710,58 +664,22 @@ void ExploreFrame::UpdateTitle()
 	if (modified)
 		modStr = "*";
 #endif
-	if (m_archive.get())
+
+	bool saveAvailable = m_archive.get() && !m_archive->GetReadOnly() && modified;
+	m_menubar->Enable(wxID_SAVE, saveAvailable);
+	m_toolBar->EnableTool(wxID_SAVE, saveAvailable);
+	m_menubar->Enable(wxID_SAVEAS, saveAvailable);
+
+	wxString newTitle = modStr;
+
+	if (!m_patchFileName.empty())
 	{
-		wxFileName archiveFN(m_archive->GetFileName());
-		SetTitle(wxString::Format("%s%s - %s", modStr, archiveFN.GetName(), wxTheApp->GetAppDisplayName()));
-	} else {
-		SetTitle(wxTheApp->GetAppDisplayName());
-	}
-}
+		wxFileName archiveFN(m_patchFileName);
+		newTitle += wxString::Format("%s - %s", archiveFN.GetName(), wxTheApp->GetAppDisplayName());
+	} 
+	else
+		newTitle += wxTheApp->GetAppDisplayName();
 
-bool ExploreFrame::ConfirmBackup()
-{
-	if (m_backupAvailable)
-		return true;
-	
-	wxMessageDialog msgDlg(this, _("Backup recommended\n\nBefore modifing the file it is recommend to create a backup.\nDo you wish to create a backup now?"),
-					_("Warning"), wxICON_WARNING | wxYES_NO | wxCANCEL);
-	msgDlg.SetYesNoLabels(_("Backup"), _("Don't backup"));
-
-	switch (msgDlg.ShowModal()) {
-		case wxID_YES:
-		{
-			wxBusyInfo busyInfo(_("Creating backup..."));
-			wxBusyCursor busyCursor;
-			if (!wxCopyFile(m_archive->GetFileName(), GetBackupFileName()))
-			{
-				wxLogError(_("Backup could not be created"));
-				return false;
-			} else {
-				CheckBackup();
-				return true;
-			}
-		}
-		
-		case wxID_NO:
-			return true;
-			
-		default:
-			return false;
-	}
-}
-
-void ExploreFrame::CheckBackup()
-{
-	m_backupAvailable = wxFileExists(GetBackupFileName());
-	m_menubar->Enable(ID_RESTORE, m_backupAvailable);
-}
-
-wxString ExploreFrame::GetBackupFileName() const
-{
-	wxString backupFileName = m_archive->GetFileName() + "_backup";
-	if (m_archive->GetFormat() == WADArchive::FmtHM2v2)
-		backupFileName += "V2";
-	return backupFileName;
+	SetTitle(newTitle);
 }
 

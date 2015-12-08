@@ -88,7 +88,7 @@
             <event name="OnSetFocus"></event>
             <event name="OnSize"></event>
             <event name="OnUpdateUI"></event>
-            <object class="wxMenuBar" expanded="0">
+            <object class="wxMenuBar" expanded="1">
                 <property name="bg"></property>
                 <property name="context_help"></property>
                 <property name="context_menu">1</property>
@@ -133,7 +133,7 @@
                 <event name="OnSetFocus"></event>
                 <event name="OnSize"></event>
                 <event name="OnUpdateUI"></event>
-                <object class="wxMenu" expanded="0">
+                <object class="wxMenu" expanded="1">
                     <property name="label">&amp;File</property>
                     <property name="name">m_fileMenu</property>
                     <property name="permission">protected</property>
@@ -183,26 +183,26 @@
                         <event name="OnUpdateUI"></event>
                     </object>
                     <object class="separator" expanded="0">
-                        <property name="name">m_separator4</property>
+                        <property name="name">m_separator1</property>
                         <property name="permission">none</property>
                     </object>
-                    <object class="wxMenuItem" expanded="0">
+                    <object class="wxMenuItem" expanded="1">
                         <property name="bitmap"></property>
                         <property name="checked">0</property>
-                        <property name="enabled">0</property>
+                        <property name="enabled">1</property>
                         <property name="help"></property>
-                        <property name="id">ID_RESTORE</property>
+                        <property name="id">ID_OPEN_BASE_WAD</property>
                         <property name="kind">wxITEM_NORMAL</property>
-                        <property name="label">Restore</property>
-                        <property name="name">restore</property>
+                        <property name="label">Switch base wad...</property>
+                        <property name="name">openBaseWad</property>
                         <property name="permission">none</property>
                         <property name="shortcut"></property>
                         <property name="unchecked_bitmap"></property>
-                        <event name="OnMenuSelection">OnRestoreClicked</event>
+                        <event name="OnMenuSelection">OnSwitchBaseWadClicked</event>
                         <event name="OnUpdateUI"></event>
                     </object>
-                    <object class="separator" expanded="0">
-                        <property name="name">m_separator1</property>
+                    <object class="separator" expanded="1">
+                        <property name="name">m_separator5</property>
                         <property name="permission">none</property>
                     </object>
                     <object class="wxMenuItem" expanded="0">
@@ -287,60 +287,6 @@
                         <property name="shortcut">Del</property>
                         <property name="unchecked_bitmap"></property>
                         <event name="OnMenuSelection">OnDeleteClicked</event>
-                        <event name="OnUpdateUI"></event>
-                    </object>
-                </object>
-                <object class="wxMenu" expanded="0">
-                    <property name="label">&amp;Patch</property>
-                    <property name="name">m_patchMenu</property>
-                    <property name="permission">protected</property>
-                    <object class="wxMenuItem" expanded="0">
-                        <property name="bitmap"></property>
-                        <property name="checked">0</property>
-                        <property name="enabled">1</property>
-                        <property name="help"></property>
-                        <property name="id">ID_PATCH_APPLY</property>
-                        <property name="kind">wxITEM_NORMAL</property>
-                        <property name="label">&amp;Apply...</property>
-                        <property name="name">apply</property>
-                        <property name="permission">none</property>
-                        <property name="shortcut"></property>
-                        <property name="unchecked_bitmap"></property>
-                        <event name="OnMenuSelection">OnPatchApplyClicked</event>
-                        <event name="OnUpdateUI"></event>
-                    </object>
-                    <object class="separator" expanded="0">
-                        <property name="name">m_separator3</property>
-                        <property name="permission">none</property>
-                    </object>
-                    <object class="wxMenuItem" expanded="0">
-                        <property name="bitmap"></property>
-                        <property name="checked">0</property>
-                        <property name="enabled">1</property>
-                        <property name="help"></property>
-                        <property name="id">ID_PATCH_PREPARE</property>
-                        <property name="kind">wxITEM_CHECK</property>
-                        <property name="label">&amp;Prepare</property>
-                        <property name="name">prepare</property>
-                        <property name="permission">none</property>
-                        <property name="shortcut"></property>
-                        <property name="unchecked_bitmap"></property>
-                        <event name="OnMenuSelection">OnPatchPrepareClicked</event>
-                        <event name="OnUpdateUI"></event>
-                    </object>
-                    <object class="wxMenuItem" expanded="0">
-                        <property name="bitmap"></property>
-                        <property name="checked">0</property>
-                        <property name="enabled">1</property>
-                        <property name="help"></property>
-                        <property name="id">ID_PATCH_CREATE</property>
-                        <property name="kind">wxITEM_NORMAL</property>
-                        <property name="label">&amp;Create...</property>
-                        <property name="name">create</property>
-                        <property name="permission">none</property>
-                        <property name="shortcut"></property>
-                        <property name="unchecked_bitmap"></property>
-                        <event name="OnMenuSelection">OnPatchCreateClicked</event>
                         <event name="OnUpdateUI"></event>
                     </object>
                 </object>
@@ -512,27 +458,6 @@
                 </object>
                 <object class="toolSeparator" expanded="0">
                     <property name="permission">protected</property>
-                </object>
-                <object class="tool" expanded="0">
-                    <property name="bitmap">Load From Embedded File; art/ark_addfile.png</property>
-                    <property name="context_menu">0</property>
-                    <property name="id">ID_PATCH_APPLY</property>
-                    <property name="kind">wxITEM_NORMAL</property>
-                    <property name="label">Apply Patch</property>
-                    <property name="name">applyTool</property>
-                    <property name="permission">none</property>
-                    <property name="statusbar"></property>
-                    <property name="tooltip">Apply Patch</property>
-                    <event name="OnAuiToolBarBeginDrag"></event>
-                    <event name="OnAuiToolBarMiddleClick"></event>
-                    <event name="OnAuiToolBarOverflowClick"></event>
-                    <event name="OnAuiToolBarRightClick"></event>
-                    <event name="OnAuiToolBarToolDropDown"></event>
-                    <event name="OnMenuSelection"></event>
-                    <event name="OnToolClicked"></event>
-                    <event name="OnToolEnter"></event>
-                    <event name="OnToolRClicked"></event>
-                    <event name="OnUpdateUI"></event>
                 </object>
                 <object class="wxSearchCtrl" expanded="0">
                     <property name="BottomDockable">1</property>

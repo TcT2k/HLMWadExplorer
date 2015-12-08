@@ -31,7 +31,7 @@ class ExploreFrame : public BaseExploreFrame
 		void OnOpenClicked( wxCommandEvent& event );
 		void OnSaveClicked( wxCommandEvent& event );
 		void OnSaveAsClicked( wxCommandEvent& event );
-		void OnRestoreClicked( wxCommandEvent& event );
+		void OnSwitchBaseWadClicked(wxCommandEvent& event);
 		void OnExtractClicked( wxCommandEvent& event );
 		void OnReplaceClicked( wxCommandEvent& event );
 		void OnAddClicked( wxCommandEvent& event );
@@ -45,25 +45,21 @@ class ExploreFrame : public BaseExploreFrame
 		void OnFileListSelectionChanged(wxDataViewEvent& event);
 		void OnFileListDoubleClick( wxMouseEvent& event );
 		void OnRecentFileClicked( wxCommandEvent& event );
-		void OnPatchApplyClicked(wxCommandEvent& event);
-		void OnPatchPrepareClicked(wxCommandEvent& event);
-		void OnPatchCreateClicked(wxCommandEvent& event);
 	public:
 		/** Constructor */
 		ExploreFrame( wxWindow* parent );
 	//// end generated class members
 		~ExploreFrame();
 
+		bool OpenBaseFile(bool forceSelection = false);
+
 	private:
 		friend class FileDataModel;
 
 		wxSharedPtr<WADArchive> m_archive;
-		bool m_backupAvailable;
+		wxString m_patchFileName;
 		wxFileHistory m_fileHistory;
-		bool m_preparingPatch;
 		bool m_ignoreSearch;
-		std::set<size_t> m_patchEntries;
-		wxDataViewColumn* m_fileListToggleColumn;
 	
 		const WADArchiveEntry& GetSelectedEntry() const;
 
@@ -71,17 +67,13 @@ class ExploreFrame : public BaseExploreFrame
 
 		void UpdateTitle();
 	
-		bool ConfirmBackup();
-	
-		void CheckBackup();
-
-		wxString GetBackupFileName() const;
-
 		wxString GetGameBasePath() const;
 
 		void SelectItem(size_t index);
 
 		void ApplyFilter(const wxString& filter);
+
+		bool CreatePatch();
 };
 
 #endif // __ExploreFrame__

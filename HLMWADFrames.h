@@ -41,12 +41,9 @@
 
 ///////////////////////////////////////////////////////////////////////////
 
-#define ID_RESTORE 1000
+#define ID_OPEN_BASE_WAD 1000
 #define ID_EXTRACT 1001
 #define ID_REPLACE 1002
-#define ID_PATCH_APPLY 1003
-#define ID_PATCH_PREPARE 1004
-#define ID_PATCH_CREATE 1005
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Class BaseExploreFrame
@@ -59,7 +56,6 @@ class BaseExploreFrame : public wxFrame
 		wxMenuBar* m_menubar;
 		wxMenu* m_fileMenu;
 		wxMenu* resource;
-		wxMenu* m_patchMenu;
 		wxMenu* help;
 		wxToolBar* m_toolBar;
 		wxSearchCtrl* m_searchCtrl;
@@ -77,15 +73,12 @@ class BaseExploreFrame : public wxFrame
 		virtual void OnOpenClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnSaveClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnSaveAsClicked( wxCommandEvent& event ) { event.Skip(); }
-		virtual void OnRestoreClicked( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnSwitchBaseWadClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnQuitClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnExtractClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnReplaceClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnAddClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnDeleteClicked( wxCommandEvent& event ) { event.Skip(); }
-		virtual void OnPatchApplyClicked( wxCommandEvent& event ) { event.Skip(); }
-		virtual void OnPatchPrepareClicked( wxCommandEvent& event ) { event.Skip(); }
-		virtual void OnPatchCreateClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnAboutClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnSearchCtrlButton( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnSearchCtrlText( wxCommandEvent& event ) { event.Skip(); }

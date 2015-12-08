@@ -16,7 +16,15 @@ class WADArchive;
 class WADArchiveEntry
 {
 public:
+	enum EntryStatus
+	{
+		Entry_Original,
+		Entry_Replaced,
+		Entry_Added
+	};
+
 	WADArchiveEntry(const wxString& fileName, wxInt64 size, wxInt64 offset):
+		m_status(Entry_Original),
 		m_fileName(fileName),
 		m_size(size),
 		m_offset(offset),
@@ -26,6 +34,7 @@ public:
 	}
 
 	WADArchiveEntry(const WADArchiveEntry& entry, const WADArchive* sourceArchive):
+		m_status(Entry_Original),
 		m_fileName(entry.GetFileName()),
 		m_size(entry.GetSize()),
 		m_offset(entry.GetOffset()),
@@ -74,7 +83,18 @@ public:
 		return m_sourceArchive;
 	}
 
+	EntryStatus GetStatus() const
+	{
+		return m_status;
+	}
+
+	void SetStatus(EntryStatus status)
+	{
+		m_status = status;
+	}
+
 private:
+	EntryStatus m_status;
 	wxString m_fileName;
 	wxInt64 m_size;
 	wxInt64 m_offset;
@@ -117,20 +137,20 @@ public:
 	
 	void Replace(size_t itemIndex, const wxString& sourceFileName);
 
-	void Patch(const WADArchive& patchArchive, const WADArchiveEntry& patchEntry);
-
 	bool Extract(const WADArchiveEntry& entry, const wxString& targetFileName);
 
 	bool Extract(const WADArchiveEntry& entry, wxOutputStream& oStr);
 
 	wxBitmap ExtractBitmap(const WADArchiveEntry& entry);
 	
-	bool Save();
+	bool Write();
 	
-	bool Save(wxOutputStream& oStr);
+	bool Write(wxOutputStream& oStr);
 	
-	bool Save(const wxString& targetFileName);
-	
+	bool Write(const wxString& targetFileName);
+
+	bool CreatePatch(const wxString& targetFileName);
+
 	bool IsModified() const
 	{
 		return m_modified;
