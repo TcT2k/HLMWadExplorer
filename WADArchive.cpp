@@ -299,6 +299,37 @@ bool WADArchive::CreatePatch(const wxString& targetFileName)
 		return false;
 }
 
+bool WADArchive::LoadPatch(const wxString& patchFileName)
+{
+	if (m_patchArchive.get())
+	{
+		// TODO: reset entries
+		wxLogError("Only one patch wad can be loaded");
+		return false;
+	}
+
+	m_patchArchive.reset(new WADArchive(patchFileName));
+
+	for (int patchIndex = 0; patchIndex < m_patchArchive->GetEntryCount(); ++patchIndex)
+	{
+		const WADArchiveEntry& patchEntry = m_patchArchive->GetEntry(patchIndex);
+
+		for (auto entry = m_entries.begin(); entry != m_entries.end(); ++entry)
+		{
+			if (entry->GetFileName().IsSameAs(patchEntry.GetFileName()))
+			{
+				wxLogDebug("Patch entry: %s", patchEntry.GetFileName());
+				*entry = WADArchiveEntry(patchEntry, m_patchArchive.get());
+				entry->SetStatus(WADArchiveEntry::Entry_Replaced);
+
+				break;
+			}
+		}
+	}
+
+	return true;
+}
+
 const WADArchiveEntry& WADArchive::GetEntry(const wxString& fileName) const
 {
 	for (auto entry = m_entries.begin(); entry != m_entries.end(); ++entry)

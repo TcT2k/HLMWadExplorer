@@ -100,8 +100,6 @@ ExploreFrame::ExploreFrame( wxWindow* parent ):
 	m_menubar->Enable(wxID_SAVE, false);
 	m_toolBar->EnableTool(wxID_SAVE, false);
 	m_menubar->Enable(wxID_SAVEAS, false);
-	m_menubar->Enable(wxID_OPEN, false);
-	m_toolBar->EnableTool(wxID_OPEN, false);
 	m_ignoreSearch = true;
 
 	m_toolBar->InsertStretchableSpace(5);
@@ -349,6 +347,9 @@ void ExploreFrame::OpenFile(const wxString& filename)
 		UpdateTitle();
 		return;
 	}
+
+	if (!m_archive->LoadPatch(filename))
+		return;
 
 	m_patchFileName = filename;
 

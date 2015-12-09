@@ -151,6 +151,8 @@ public:
 
 	bool CreatePatch(const wxString& targetFileName);
 
+	bool LoadPatch(const wxString& patchFileName);
+
 	bool IsModified() const
 	{
 		return m_modified;
@@ -189,6 +191,7 @@ private:
 	wxVector<WADArchiveEntry*> m_filteredEntries;
 	wxFileOffset m_dataOffset;
 	bool m_modified;
+	wxSharedPtr<WADArchive> m_patchArchive;
 
 	void ParseFile();
 };
