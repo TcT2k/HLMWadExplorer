@@ -68,6 +68,8 @@ class ExploreFrame : public BaseExploreFrame
 		void UpdateTitle();
 	
 		wxString GetGameBasePath() const;
+	
+		wxString GetModPath() const;
 
 		void SelectItem(size_t index);
 

@@ -256,6 +256,24 @@ wxString ExploreFrame::GetGameBasePath() const
 	return hlmPath;
 }
 
+wxString ExploreFrame::GetModPath() const
+{
+	wxFileName modPathFN;
+	
+#if defined(__WXOSX__)
+	modPathFN.Assign(wxFileName::GetHomeDir() + "/Library/Application Support/HotlineMiami2/Mods", "");
+#elif defined(__WXMSW__)
+	modPathFN.Assign(wxStandardPaths::Get().GetDocumentsDir(), "");
+	modPathFN.AppendDir("My Games");
+	modPathFN.AppendDir("HotlineMiami2");
+	modPathFN.AppendDir("Mods");
+#endif
+	
+	modPathFN.Mkdir(wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
+	
+	return modPathFN.GetFullPath();
+}
+
 void ExploreFrame::OnOpenClicked( wxCommandEvent& event )
 {
 	wxFileDialog fileDlg(this, _("Select patch WAD file"), GetGameBasePath(), wxString(), "*.patchwad", wxFD_DEFAULT_STYLE | wxFD_FILE_MUST_EXIST);
@@ -359,15 +377,7 @@ void ExploreFrame::OnSaveAsClicked( wxCommandEvent& event )
 {
 	wxString savePath;
 	if (m_patchFileName.empty())
-	{
-		wxFileName saveFN(wxStandardPaths::Get().GetDocumentsDir(), "");
-		saveFN.AppendDir("My Games");
-		saveFN.AppendDir("HotlineMiami2");
-		saveFN.AppendDir("Mods");
-		saveFN.Mkdir(wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
-
-		savePath = saveFN.GetFullPath();
-	}
+		savePath = GetModPath();
 
 	wxFileDialog fileDlg(this, _("Select destination patch filename"), savePath, m_patchFileName, "*.patchwad", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 	if (fileDlg.ShowModal() == wxID_OK)
