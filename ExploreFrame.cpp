@@ -32,9 +32,8 @@
 class FileDataModel : public wxDataViewVirtualListModel
 {
 public:
-	FileDataModel(ExploreFrame* frame, WADArchive* archive) :
+	FileDataModel(WADArchive* archive) :
 		wxDataViewVirtualListModel(archive->GetFilteredEntryCount()),
-		m_frame(frame),
 		m_archive(archive)
 	{
 
@@ -83,7 +82,6 @@ public:
 
 
 private:
-	ExploreFrame* m_frame;
 	WADArchive* m_archive;
 };
 
@@ -322,7 +320,7 @@ bool ExploreFrame::OpenBaseFile(bool forceSelection)
 	m_ignoreSearch = false;
 
 	m_archive = new WADArchive(baseFileName.GetFullPath());
-	wxObjectDataPtr<FileDataModel> model(new FileDataModel(this, m_archive.get()));
+	wxObjectDataPtr<FileDataModel> model(new FileDataModel(m_archive.get()));
 	m_fileListCtrl->UnselectAll();
 	m_fileListCtrl->AssociateModel(model.get());
 	m_fileListCtrl->Refresh();
