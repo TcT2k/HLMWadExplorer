@@ -263,6 +263,8 @@ wxString ExploreFrame::GetModPath() const
 	modPathFN.AppendDir("My Games");
 	modPathFN.AppendDir("HotlineMiami2");
 	modPathFN.AppendDir("Mods");
+#else
+	modPathFN.Assign(wxFileName::GetHomeDir() + "/HotlineMiami2/Mods", "");
 #endif
 	
 	modPathFN.Mkdir(wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
