@@ -62,7 +62,7 @@ class ExploreFrame : public BaseExploreFrame
 		wxFileHistory m_fileHistory;
 		bool m_ignoreSearch;
 	
-		const WADArchiveEntry& GetSelectedEntry() const;
+		const WADArchiveEntry* GetSelectedEntry() const;
 
 		void OpenFile(const wxString& filename);
 
@@ -72,7 +72,7 @@ class ExploreFrame : public BaseExploreFrame
 	
 		wxString GetModPath() const;
 
-		void SelectItem(size_t index);
+		void SelectItem(WADDirEntry* entry);
 
 		void ApplyFilter(const wxString& filter);
 

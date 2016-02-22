@@ -11,6 +11,90 @@
 #include <wx/wfstream.h>
 #include <wx/mstream.h>
 
+//
+// FileWADDirEntry
+//
+
+class FileWADDirEntry : public WADDirEntry
+{
+public:
+	FileWADDirEntry(WADDirEntry* parent, WADArchiveEntry* entry):
+		WADDirEntry(parent)
+	{
+		m_entry = entry;
+		wxFileName fn(entry->GetFileName());
+		m_name = fn.GetFullName();
+	}
+
+	virtual size_t GetChildCount() const override
+	{
+		return 0;
+	}
+
+	virtual WADDirEntry* GetChild(size_t index) override
+	{
+		return NULL;
+	}
+
+	virtual WADArchiveEntry* GetEntry() const override
+	{
+		return m_entry;
+	}
+
+private:
+	WADArchiveEntry* m_entry;
+};
+
+//
+// FolderWADDirEntry
+//
+class FolderWADDirEntry : public WADDirEntry
+{
+public:
+	FolderWADDirEntry(WADDirEntry* parent, const wxString& name):
+		WADDirEntry(parent)
+	{
+		m_name = name;
+	}
+
+	virtual size_t GetChildCount() const override
+	{
+		return m_entries.size();
+	}
+
+	virtual WADDirEntry* GetChild(size_t index) override
+	{
+		return m_entries[index].get();
+	}
+
+	virtual WADArchiveEntry* GetEntry() const override
+	{
+		return NULL;
+	}
+
+	WADDirEntry* AddFolder(const wxString& name)
+	{
+		wxSharedPtr<WADDirEntry> folder(new FolderWADDirEntry(this, name));
+		m_entries.push_back(folder);
+		return folder.get();
+	}
+
+	WADDirEntry* AddFile(WADArchiveEntry* entry)
+	{
+		wxSharedPtr<WADDirEntry> folder(new FileWADDirEntry(this, entry));
+		m_entries.push_back(folder);
+		return folder.get();
+	}
+
+private:
+	wxVector< wxSharedPtr<WADDirEntry> > m_entries;
+};
+
+
+//
+// WADArchive
+//
+
 WADArchive::WADArchive(const wxString& fileName, bool createFile) :
 	m_readOnly(false),
 	m_format(FmtHM2),
@@ -361,17 +445,16 @@ void WADArchive::Replace(size_t itemIndex, const wxString& sourceFileName)
 	m_modified = true;
 }
 
-void WADArchive::ReplaceFiltered(size_t itemIndex, const wxString& sourceFileName)
+void WADArchive::Replace(WADDirEntry* dir, const wxString& sourceFileName)
 {
-	m_filteredEntries[itemIndex]->SetSourceFileName(sourceFileName);
-	m_filteredEntries[itemIndex]->SetStatus(WADArchiveEntry::Entry_Replaced);
+	dir->GetEntry()->SetSourceFileName(sourceFileName);
+	dir->GetEntry()->SetStatus(WADArchiveEntry::Entry_Replaced);
 	m_modified = true;
 }
 
 bool WADArchive::ApplyFilter(const wxString& filter)
 {
-	m_filteredEntries.clear();
-	m_filteredEntries.reserve(m_entries.size());
+	m_rootDir.reset(new FolderWADDirEntry(NULL, ""));
 
 	wxString lowerFilter = filter.Lower();
 
@@ -379,17 +462,52 @@ bool WADArchive::ApplyFilter(const wxString& filter)
 	{
 		if (lowerFilter.empty() ||
 			entry->GetFileName().Lower().Find(lowerFilter) != wxNOT_FOUND)
-			m_filteredEntries.push_back(&(*entry));
+		{
+			WADDirEntry* dir = FindDir(entry->GetFileName(), true);
+			static_cast<FolderWADDirEntry*>(dir)->AddFile(entry);
+		}
 	}
 
-	if (m_filteredEntries.empty())
+	if (!m_rootDir->GetChildCount())
 	{
 		// Reset filter
 		ApplyFilter("");
 
 		return false;
-	} else {
-		wxLogDebug("%u items for filter %s", m_filteredEntries.size(), filter);
+	} else
 		return true;
-	}
 }
+
+WADDirEntry* WADArchive::FindDir(const wxString& path, bool createOnDemand)
+{
+	WADDirEntry* result = m_rootDir.get();
+	if (!result)
+		return NULL;
+
+	wxFileName fn(path);
+	for (auto it = fn.GetDirs().begin(); it != fn.GetDirs().end(); ++it)
+	{
+		WADDirEntry* subDir = NULL;
+		for (size_t i = 0; i < result->GetChildCount() && !subDir; ++i)
+		{
+			WADDirEntry* entry = result->GetChild(i);
+			if (!entry->GetEntry() && entry->GetName() == *it)
+			{
+				subDir = entry;
+			}
+		}
+
+		if (!subDir)
+		{
+			if (createOnDemand)
+				result = static_cast<FolderWADDirEntry*>(result)->AddFolder(*it);
+			else
+				return NULL;
+		}
+		else
+			result = subDir;
+	}
+
+	return result;
+}
+

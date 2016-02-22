@@ -30,11 +30,10 @@
 #include "MergeDialog.h"
 #include "VersionInfo.h"
 
-class FileDataModel : public wxDataViewVirtualListModel
+class FileDataModel : public wxDataViewModel
 {
 public:
 	FileDataModel(WADArchive* archive) :
-		wxDataViewVirtualListModel(archive->GetFilteredEntryCount()),
 		m_archive(archive)
 	{
 
@@ -51,31 +50,77 @@ public:
 		return wxString();
 	}
 
-	void GetValueByRow(wxVariant &variant, unsigned int row, unsigned int col) const
+	void GetValue(wxVariant &variant, const wxDataViewItem &item, unsigned int col) const
 	{
-		const WADArchiveEntry& entry = m_archive->GetFilteredEntry(row);
+		WADDirEntry* dir = static_cast<WADDirEntry*>(item.GetID());
 		switch (col)
 		{
 			case 0:
-				variant = entry.GetFileName();
+				variant = dir->GetName();
 				break;
 			case 1:
-				variant = wxFileName::GetHumanReadableSize(wxULongLong(entry.GetSize()));
+				if (dir->GetEntry())
+					variant = wxFileName::GetHumanReadableSize(wxULongLong(dir->GetEntry()->GetSize()));
+				else
+					variant = wxString();
 				break;
 		}
 
 	}
 
-	bool SetValueByRow(const wxVariant &variant, unsigned int row, unsigned int col)
+	bool SetValue(const wxVariant &variant, const wxDataViewItem &item, unsigned int col)
 	{
 		return false;
 	}
 
-	bool GetAttrByRow(unsigned int row, unsigned int col,
-		wxDataViewItemAttr &attr) const
+	bool IsEnabled(const wxDataViewItem &item, unsigned int col) const
 	{
-		const WADArchiveEntry& entry = m_archive->GetFilteredEntry(row);
-		if (entry.GetStatus() != WADArchiveEntry::Entry_Original)
+		return true;
+	}
+
+	wxDataViewItem GetParent(const wxDataViewItem &item) const
+	{
+		// the invisible root node has no parent
+		if (!item.IsOk())
+			return wxDataViewItem(0);
+
+		WADDirEntry* dir = static_cast<WADDirEntry*>(item.GetID());
+
+		if (dir == m_archive->GetRootDir())
+			return wxDataViewItem(0);
+
+		return wxDataViewItem((void*)dir->GetParent());
+	}
+
+	bool IsContainer(const wxDataViewItem &item) const
+	{
+		// the invisble root node can have children
+		if (!item.IsOk())
+			return true;
+
+		WADDirEntry* dir = static_cast<WADDirEntry*>(item.GetID());
+		return !dir->GetEntry();
+	}
+
+	unsigned int GetChildren(const wxDataViewItem &parent, wxDataViewItemArray &array) const
+	{
+		WADDirEntry* dir = static_cast<WADDirEntry*>(parent.GetID());
+		if (!dir)
+			dir = m_archive->GetRootDir();
+
+		for (size_t i = 0; i < dir->GetChildCount(); ++i)
+		{
+			WADDirEntry* childDir = dir->GetChild(i);
+			array.Add(wxDataViewItem(childDir));
+		}
+
+		return dir->GetChildCount();
+	}
+
+	bool GetAttr(const wxDataViewItem &item, unsigned int col, wxDataViewItemAttr &attr) const
+	{
+		WADDirEntry* dir = static_cast<WADDirEntry*>(item.GetID());
+		if (dir->GetEntry() && dir->GetEntry()->GetStatus() != WADArchiveEntry::Entry_Original)
 			attr.SetBold(true);
 
 		return true;
@@ -130,12 +175,15 @@ ExploreFrame::~ExploreFrame()
 {
 }
 
-void ExploreFrame::SelectItem(size_t index)
+void ExploreFrame::SelectItem(WADDirEntry* entry)
 {
-	wxDataViewItem item((void*)(index + 1));
-	m_fileListCtrl->UnselectAll();
-	m_fileListCtrl->Select(item);
-	m_fileListCtrl->EnsureVisible(item);
+	if (!entry)
+		entry = m_archive->GetRootDir()->GetChild(0);
+
+	wxDataViewItem item(entry);
+	//m_fileListCtrl->UnselectAll();
+	//m_fileListCtrl->Select(item);
+	//m_fileListCtrl->EnsureVisible(item);
 	wxDataViewEvent evt;
 	OnFileListSelectionChanged(evt);
 }
@@ -191,9 +239,9 @@ void ExploreFrame::ApplyFilter(const wxString& filter)
 	if (!m_archive->ApplyFilter(filter))
 		wxLogError(_("No items found"));
 
-	static_cast<FileDataModel*>(m_fileListCtrl->GetModel())->Reset(m_archive->GetFilteredEntryCount());
-	if (m_archive->GetFilteredEntryCount() > 0)
-		SelectItem(0);
+	m_fileListCtrl->GetModel()->Cleared();
+	if (!m_archive->GetRootDir()->empty())
+		SelectItem(NULL);
 }
 
 void ExploreFrame::OnWindowClose( wxCloseEvent& event )
@@ -328,9 +376,9 @@ bool ExploreFrame::OpenBaseFile(bool forceSelection)
 	m_menubar->Enable(ID_EXTRACT, true);
 	m_toolBar->EnableTool(ID_EXTRACT, true);
 	m_menubar->Enable(wxID_ADD, !m_archive->GetReadOnly());
-	if (m_archive->GetFilteredEntryCount() > 0)
+	if (!m_archive->GetRootDir()->empty())
 	{
-		SelectItem(0);
+		SelectItem(NULL);
 		m_fileListCtrl->SetFocus();
 	}
 
@@ -454,10 +502,13 @@ bool ExploreFrame::CreatePatch()
 	return patchCreated;
 }
 
-const WADArchiveEntry& ExploreFrame::GetSelectedEntry() const
+const WADArchiveEntry* ExploreFrame::GetSelectedEntry() const
 {
-	size_t index = (size_t) m_fileListCtrl->GetSelection().GetID() - 1;
-	return m_archive->GetFilteredEntry(index);
+	WADDirEntry* dir = static_cast<WADDirEntry*>(m_fileListCtrl->GetSelection().GetID());
+	if (dir)
+		return dir->GetEntry();
+	else
+		return NULL;
 }
 
 void ExploreFrame::OnExtractClicked( wxCommandEvent& event )
@@ -482,21 +533,26 @@ void ExploreFrame::OnExtractClicked( wxCommandEvent& event )
 
 			for (auto it = selectedItems.begin(); it != selectedItems.end(); ++it)
 			{
-				const WADArchiveEntry& entry = m_archive->GetFilteredEntry((size_t) it->GetID() - 1);
-				wxFileName targetFileName(entry.GetFileName(), wxPATH_UNIX);
+				WADDirEntry* dir = static_cast<WADDirEntry*>(it->GetID());
+				const WADArchiveEntry* entry = dir->GetEntry();
+				if (!entry)
+					continue;
+
+				wxFileName targetFileName(entry->GetFileName(), wxPATH_UNIX);
 				targetFileName.Normalize(wxPATH_NORM_ALL, dirDlg.GetPath());
 				wxLogDebug("Extracting to: %s", targetFileName.GetFullPath());
 
 				if (!targetFileName.Mkdir(wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL))
 					break;
-				m_archive->Extract(entry, targetFileName.GetFullPath());
+				m_archive->Extract(*entry, targetFileName.GetFullPath());
 			}
 		}
 		wxLogInfo(_("Files extracted to %s"), dirDlg.GetPath());
 	} else {
-		const WADArchiveEntry& entry = GetSelectedEntry();
+		const WADArchiveEntry* entry = GetSelectedEntry();
+		wxASSERT(entry);
 
-		wxFileName fn(entry.GetFileName(), wxPATH_UNIX);
+		wxFileName fn(entry->GetFileName(), wxPATH_UNIX);
 
 		wxString fileName = fn.GetFullName();
 		wxFileDialog fileDlg(this, _("Select target for file extraction"), extractFolder, fileName, 
@@ -506,7 +562,7 @@ void ExploreFrame::OnExtractClicked( wxCommandEvent& event )
 			wxBusyInfo busyInfo(_("Extracting data..."));
 			wxBusyCursor busyCursor;
 
-			m_archive->Extract(entry, fileDlg.GetPath());
+			m_archive->Extract(*entry, fileDlg.GetPath());
 		}
 
 		wxLogInfo(_("File extracted to %s"), fileDlg.GetPath());
@@ -515,10 +571,11 @@ void ExploreFrame::OnExtractClicked( wxCommandEvent& event )
 
 void ExploreFrame::OnReplaceClicked( wxCommandEvent& event )
 {
-	const WADArchiveEntry& entry = GetSelectedEntry();
-	wxFileName entryFN(entry.GetFileName());
+	const WADArchiveEntry* entry = GetSelectedEntry();
+	wxASSERT(entry != NULL);
+	wxFileName entryFN(entry->GetFileName());
 	
-	wxFileDialog fileDlg(this, wxString::Format(_("Select file to replace %s"), entry.GetFileName()), wxString(),
+	wxFileDialog fileDlg(this, wxString::Format(_("Select file to replace %s"), entry->GetFileName()), wxString(),
 						 entryFN.GetFullName(), "*." + entryFN.GetExt(), wxFD_DEFAULT_STYLE  | wxFD_FILE_MUST_EXIST);
 	if (fileDlg.ShowModal() == wxID_OK)
 	{
@@ -534,7 +591,7 @@ void ExploreFrame::OnReplaceClicked( wxCommandEvent& event )
 					imgErrors += _("- Image may not have an alpha mask\n");
 
 				wxMemoryOutputStream oStr;
-				m_archive->Extract(entry, oStr);
+				m_archive->Extract(*entry, oStr);
 				wxStreamBuffer* buffer = oStr.GetOutputStreamBuffer();
 				wxMemoryInputStream iStr(buffer->GetBufferStart(), buffer->GetBufferSize());
 				wxImage orgImage(iStr);
@@ -558,9 +615,9 @@ void ExploreFrame::OnReplaceClicked( wxCommandEvent& event )
 			}
 		}
 
-		size_t index = (size_t) m_fileListCtrl->GetSelection().GetID() - 1;
-		m_archive->ReplaceFiltered(index, fileDlg.GetPath());
-		static_cast<FileDataModel*>(m_fileListCtrl->GetModel())->RowChanged(index);
+		WADDirEntry* dir = static_cast<WADDirEntry*>(m_fileListCtrl->GetSelection().GetID());
+		m_archive->Replace(dir, fileDlg.GetPath());
+		m_fileListCtrl->GetModel()->ItemChanged(wxDataViewItem(dir));
 		wxDataViewEvent evt(wxEVT_DATAVIEW_SELECTION_CHANGED);
 		OnFileListSelectionChanged(evt);
 
@@ -583,7 +640,8 @@ void ExploreFrame::OnAddClicked( wxCommandEvent& event )
 			WADArchiveEntry entry(newEntryName, fileDlg.GetPath());
 			entry.SetStatus(WADArchiveEntry::Entry_Added);
 			m_archive->Add(entry);
-			static_cast<FileDataModel*>(m_fileListCtrl->GetModel())->RowAppended();
+			// TODO: replace
+			//static_cast<FileDataModel*>(m_fileListCtrl->GetModel())->RowAppended();
 
 			UpdateTitle();
 		}
@@ -592,13 +650,15 @@ void ExploreFrame::OnAddClicked( wxCommandEvent& event )
 
 void ExploreFrame::OnDeleteClicked( wxCommandEvent& event )
 {
-	const WADArchiveEntry& entry = GetSelectedEntry();
-	if (wxMessageBox(wxString::Format(_("Are you sure you want to delete %s?"), entry.GetFileName()),
+	const WADArchiveEntry* entry = GetSelectedEntry();
+	wxASSERT(entry != NULL);
+	if (wxMessageBox(wxString::Format(_("Are you sure you want to delete %s?"), entry->GetFileName()),
 									  _("Warning"), wxICON_WARNING | wxYES_NO | wxNO_DEFAULT, this) == wxYES)
 	{
 		size_t index = (size_t) m_fileListCtrl->GetSelection().GetID() - 1;
 		m_archive->Remove(index);
-		static_cast<FileDataModel*>(m_fileListCtrl->GetModel())->RowDeleted(index);
+		// TODO:: replace
+		//static_cast<FileDataModel*>(m_fileListCtrl->GetModel())->RowDeleted(index);
 		wxDataViewEvent evt(wxEVT_DATAVIEW_SELECTION_CHANGED);
 		OnFileListSelectionChanged(evt);
 
@@ -613,22 +673,29 @@ void ExploreFrame::OnQuitClicked( wxCommandEvent& event )
 
 void ExploreFrame::OnFileListSelectionChanged( wxDataViewEvent& event )
 {
-	m_menubar->Enable(ID_REPLACE, m_fileListCtrl->GetSelectedItemsCount() > 0 && !m_archive->GetReadOnly());
-	m_menubar->Enable(ID_EXTRACT, m_fileListCtrl->GetSelectedItemsCount() > 0);
-	m_toolBar->EnableTool(ID_EXTRACT, m_fileListCtrl->GetSelectedItemsCount() > 0);
-	m_menubar->Enable(wxID_DELETE, m_fileListCtrl->GetSelectedItemsCount() > 0 && !m_archive->GetReadOnly());
+	const WADArchiveEntry* entry = GetSelectedEntry();
+	bool fileSelected = (entry != NULL);
+	m_menubar->Enable(ID_REPLACE, fileSelected && m_fileListCtrl->GetSelectedItemsCount() > 0 && !m_archive->GetReadOnly());
+	m_menubar->Enable(ID_EXTRACT, fileSelected || m_fileListCtrl->GetSelectedItemsCount() > 1);
+	m_toolBar->EnableTool(ID_EXTRACT, fileSelected || m_fileListCtrl->GetSelectedItemsCount() > 1);
+	m_menubar->Enable(wxID_DELETE, fileSelected && m_fileListCtrl->GetSelectedItemsCount() > 0 && !m_archive->GetReadOnly());
 	
 	if (m_fileListCtrl->GetSelectedItemsCount() != 1)
 		return;
 
 	wxBusyCursor busyCursor;
 
-	size_t index = (size_t)m_fileListCtrl->GetSelection().GetID() - 1;
-	const WADArchiveEntry& entry = m_archive->GetFilteredEntry(index);
-	m_menubar->Enable(wxID_DELETE, entry.GetStatus() == WADArchiveEntry::Entry_Added);
-	wxLogDebug("Selected: %s", entry.GetFileName());
+	m_menubar->Enable(wxID_DELETE, entry && entry->GetStatus() == WADArchiveEntry::Entry_Added);
+	if (!entry)
+	{
+		// Directory selected
+		m_previewBookCtrl->ChangeSelection(0);
+		return;
+	}
 
-	wxFileName fn(entry.GetFileName(), wxPATH_UNIX);
+	wxLogDebug("Selected: %s", entry->GetFileName());
+
+	wxFileName fn(entry->GetFileName(), wxPATH_UNIX);
 	wxString fileExt = fn.GetExt();
 
 	if (fileExt.IsSameAs("png", false) ||
@@ -638,7 +705,7 @@ void ExploreFrame::OnFileListSelectionChanged( wxDataViewEvent& event )
 		m_previewBookCtrl->ChangeSelection(1);
 
 		ImagePanel* imgPanel = (ImagePanel*) m_previewBookCtrl->GetCurrentPage();
-		imgPanel->m_previewBitmap->SetBitmap(m_archive->ExtractBitmap(entry));
+		imgPanel->m_previewBitmap->SetBitmap(m_archive->ExtractBitmap(*entry));
 		imgPanel->Layout();
 	}
 	else if (fileExt.IsSameAs("meta", false))
@@ -647,11 +714,11 @@ void ExploreFrame::OnFileListSelectionChanged( wxDataViewEvent& event )
 
 		// Load texture pack
 		wxMemoryOutputStream oStr;
-		m_archive->Extract(entry, oStr);
+		m_archive->Extract(*entry, oStr);
 		wxStreamBuffer* buffer = oStr.GetOutputStreamBuffer();
 		wxMemoryInputStream iStr(buffer->GetBufferStart(), buffer->GetBufferSize());
 
-		wxFileName imageFN(entry.GetFileName(), wxPATH_UNIX);
+		wxFileName imageFN(entry->GetFileName(), wxPATH_UNIX);
 		imageFN.SetExt("png");
 		WADArchiveEntry imgEntry = m_archive->GetEntry(imageFN.GetFullPath(wxPATH_UNIX));
 
@@ -668,7 +735,7 @@ void ExploreFrame::OnFileListSelectionChanged( wxDataViewEvent& event )
 		TextPanel* textPanel = (TextPanel*) m_previewBookCtrl->GetCurrentPage();
 
 		wxMemoryOutputStream oStr;
-		m_archive->Extract(entry, oStr);
+		m_archive->Extract(*entry, oStr);
 		wxStreamBuffer* buffer = oStr.GetOutputStreamBuffer();
 		wxString text((const char*)buffer->GetBufferStart(), buffer->GetBufferSize());
 #if !defined(__WXMSW__)
@@ -682,7 +749,7 @@ void ExploreFrame::OnFileListSelectionChanged( wxDataViewEvent& event )
 
 		StringTablePanel* stringPanel = (StringTablePanel*) m_previewBookCtrl->GetCurrentPage();
 		wxMemoryOutputStream oStr;
-		m_archive->Extract(entry, oStr);
+		m_archive->Extract(*entry, oStr);
 		wxStreamBuffer* buffer = oStr.GetOutputStreamBuffer();
 		stringPanel->LoadStringTable(buffer->GetBufferStart(), buffer->GetBufferSize());
 	}

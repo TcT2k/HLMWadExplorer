@@ -102,6 +102,45 @@ private:
 	const WADArchive* m_sourceArchive;
 };
 
+class WADDirEntry
+{
+public:
+	WADDirEntry(WADDirEntry* parent)
+	{
+		m_parent = parent;
+	}
+
+	virtual ~WADDirEntry()
+	{ }
+
+	virtual size_t GetChildCount() const = 0;
+
+	virtual WADDirEntry* GetChild(size_t index) = 0;
+
+	virtual WADArchiveEntry* GetEntry() const = 0;
+
+	const wxString& GetName() const
+	{
+		return m_name;
+	}
+
+	WADDirEntry* GetParent() const
+	{
+		return m_parent;
+	}
+
+	bool empty() const
+	{
+		return GetChildCount() == 0;
+	}
+
+protected:
+	wxString m_name;
+
+private:
+	WADDirEntry* m_parent;
+};
+
 class WADArchive
 {
 public:
@@ -171,24 +210,21 @@ public:
 	/// Returns false if no entries matched the filter
 	bool ApplyFilter(const wxString& filter);
 
-	const WADArchiveEntry& GetFilteredEntry(size_t index) const
+	WADDirEntry* GetRootDir() const
 	{
-		return *m_filteredEntries[index];
+		return m_rootDir.get();
 	}
 
-	size_t GetFilteredEntryCount() const
-	{
-		return m_filteredEntries.size();
-	}
+	void Replace(WADDirEntry* dir, const wxString& sourceFileName);
 
-	void ReplaceFiltered(size_t itemIndex, const wxString& sourceFileName);
+	WADDirEntry* FindDir(const wxString& path, bool createOnDemand = false);
 
 private:
 	bool m_readOnly;
 	WADFormat m_format;
 	wxString m_fileName;
 	wxVector<WADArchiveEntry> m_entries;
-	wxVector<WADArchiveEntry*> m_filteredEntries;
+	wxSharedPtr<WADDirEntry> m_rootDir;
 	wxFileOffset m_dataOffset;
 	bool m_modified;
 	wxSharedPtr<WADArchive> m_patchArchive;
