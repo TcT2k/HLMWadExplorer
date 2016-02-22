@@ -10,7 +10,7 @@ MergeDialog::MergeDialog( wxWindow* parent ):
 {
 	m_backupAvailable = false;
 	
-	GetSizer()->SetMinSize(wxDLG_UNIT(this, wxSize(260, 80)));
+	GetSizer()->SetMinSize(wxDLG_UNIT(this, wxSize(260, 60)));
 	m_sdbSizerOK->SetLabel(_("Merge"));
 	
 	wxHyperlinkCtrl* linkCtrl = new wxHyperlinkCtrl(this, wxID_ANY, _("Restore Base WAD"), "");
