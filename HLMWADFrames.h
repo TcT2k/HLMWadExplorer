@@ -29,21 +29,24 @@
 #include <wx/simplebook.h>
 #include <wx/splitter.h>
 #include <wx/frame.h>
-#include <wx/listbox.h>
 #include <wx/stattext.h>
+#include <wx/filepicker.h>
+#include <wx/button.h>
+#include <wx/dialog.h>
+#include <wx/listbox.h>
 #include <wx/spinctrl.h>
 #include <wx/clrpicker.h>
 #include <wx/statbmp.h>
-#include <wx/button.h>
 #include <wx/statbox.h>
 #include <wx/textctrl.h>
 #include <wx/grid.h>
 
 ///////////////////////////////////////////////////////////////////////////
 
-#define ID_OPEN_BASE_WAD 1000
-#define ID_EXTRACT 1001
-#define ID_REPLACE 1002
+#define ID_MERGE 1000
+#define ID_OPEN_BASE_WAD 1001
+#define ID_EXTRACT 1002
+#define ID_REPLACE 1003
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Class BaseExploreFrame
@@ -73,6 +76,7 @@ class BaseExploreFrame : public wxFrame
 		virtual void OnOpenClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnSaveClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnSaveAsClicked( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnMergeClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnSwitchBaseWadClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnQuitClicked( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnExtractClicked( wxCommandEvent& event ) { event.Skip(); }
@@ -99,6 +103,29 @@ class BaseExploreFrame : public wxFrame
 			m_mainSplitter->SetSashPosition( 400 );
 			m_mainSplitter->Disconnect( wxEVT_IDLE, wxIdleEventHandler( BaseExploreFrame::m_mainSplitterOnIdle ), NULL, this );
 		}
+	
+};
+
+///////////////////////////////////////////////////////////////////////////////
+/// Class BaseMergeDialog
+///////////////////////////////////////////////////////////////////////////////
+class BaseMergeDialog : public wxDialog 
+{
+	private:
+	
+	protected:
+		wxStaticText* m_staticText11;
+		wxFilePickerCtrl* m_baseFilePicker;
+		wxStaticText* m_staticText12;
+		wxFilePickerCtrl* m_patchFilePicker;
+		wxStdDialogButtonSizer* m_sdbSizer;
+		wxButton* m_sdbSizerOK;
+		wxButton* m_sdbSizerCancel;
+	
+	public:
+		
+		BaseMergeDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("Merge Patch"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxDEFAULT_DIALOG_STYLE ); 
+		~BaseMergeDialog();
 	
 };
 

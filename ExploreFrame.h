@@ -31,6 +31,7 @@ class ExploreFrame : public BaseExploreFrame
 		void OnOpenClicked( wxCommandEvent& event );
 		void OnSaveClicked( wxCommandEvent& event );
 		void OnSaveAsClicked( wxCommandEvent& event );
+		void OnMergeClicked( wxCommandEvent& event );
 		void OnSwitchBaseWadClicked(wxCommandEvent& event);
 		void OnExtractClicked( wxCommandEvent& event );
 		void OnReplaceClicked( wxCommandEvent& event );

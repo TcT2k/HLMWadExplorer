@@ -27,6 +27,7 @@
 #include "TexturePack.h"
 #include "TexturePackPanel.h"
 #include "StringTablePanel.h"
+#include "MergeDialog.h"
 #include "VersionInfo.h"
 
 class FileDataModel : public wxDataViewVirtualListModel
@@ -390,6 +391,35 @@ void ExploreFrame::OnSaveAsClicked( wxCommandEvent& event )
 
 			wxConfigPathChanger pathChanger(wxConfigBase::Get(), "/FileHistory/PatchFiles/");
 			m_fileHistory.Save(*wxConfigBase::Get());
+		}
+	}
+}
+
+void ExploreFrame::OnMergeClicked( wxCommandEvent& event )
+{
+	MergeDialog dlg(this);
+	dlg.SetBaseWAD(m_archive->GetFileName());
+	if (dlg.ShowModal() == wxID_OK)
+	{
+		WADArchive patchArchive(dlg.GetPatchWAD());
+
+		wxMessageDialog msgDlg(this, wxString::Format(_("Applying patch\n\nThis patch contains %d new/modified files.\nAre you sure you want to apply this patch?"),
+													  patchArchive.GetEntryCount()), _("Warning"),
+							   wxICON_WARNING | wxOK | wxCANCEL | wxCANCEL_DEFAULT);
+		msgDlg.SetOKLabel(_("Patch"));
+
+		if (msgDlg.ShowModal() == wxID_OK)
+		{
+			wxBusyCursor busyCursor;
+			wxBusyInfo busyInfo(_("Merging patch..."));
+
+			WADArchive baseArchive(dlg.GetBaseWAD());
+			baseArchive.LoadPatch(dlg.GetPatchWAD());
+			// Save archive
+			if (baseArchive.Write())
+			{
+				wxLogInfo(_("Patch merged"));
+			}
 		}
 	}
 }

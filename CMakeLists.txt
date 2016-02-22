@@ -25,6 +25,8 @@ set(SRCS ${SRCS}
 	WADArchive.h
 	TexturePack.h
 	TexturePack.cpp
+	MergeDialog.h
+	MergeDialog.cpp
 	TexturePackPanel.h
 	TexturePackPanel.cpp
 	StringTablePanel.h
