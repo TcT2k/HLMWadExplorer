@@ -102,6 +102,64 @@ private:
 	const WADArchive* m_sourceArchive;
 };
 
+class WADDirectory
+{
+public:
+	WADDirectory(WADDirectory* parent, const wxString& name)
+	{
+		m_parent = parent;
+		m_name = name;
+	}
+
+	WADDirectory* AddDir(const wxString& name)
+	{
+		m_dirs.push_back(WADDirectory(this, name));
+		return &m_dirs.back();
+	}
+
+	WADDirectory* FindDir(const wxString& name)
+	{
+		for (auto it = m_dirs.begin(); it != m_dirs.end(); ++it)
+		{
+			if (it->m_name == name)
+				return &(*it);
+		}
+
+		return NULL;
+	}
+
+	int GetDirCount()
+	{
+		return m_dirs.size();
+	}
+
+	WADDirectory* GetDir(int index)
+	{
+		return &m_dirs[index];
+	}
+
+	void AddEntry(WADArchiveEntry* entry)
+	{
+		m_entries.push_back(entry);
+	}
+
+	int GetEntryCount()
+	{
+		return m_entries.size();
+	}
+
+	WADArchiveEntry* GetEntry(int index)
+	{
+		return m_entries[index];
+	}
+
+private:
+	WADDirectory* m_parent;
+	wxString m_name;
+	wxVector<WADDirectory> m_dirs;
+	wxVector<WADArchiveEntry*> m_entries;
+};
+
 class WADArchive
 {
 public:
@@ -189,9 +247,12 @@ private:
 	wxString m_fileName;
 	wxVector<WADArchiveEntry> m_entries;
 	wxVector<WADArchiveEntry*> m_filteredEntries;
+	WADDirectory m_rootDir;
 	wxFileOffset m_dataOffset;
 	bool m_modified;
 	wxSharedPtr<WADArchive> m_patchArchive;
+
+	WADDirectory* FindDir(const wxString& path, bool createIfNotFound = false);
 
 	void ParseFile();
 };

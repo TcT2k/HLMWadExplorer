@@ -15,10 +15,34 @@ WADArchive::WADArchive(const wxString& fileName, bool createFile) :
 	m_readOnly(false),
 	m_format(FmtHM2),
 	m_fileName(fileName),
+	m_rootDir(NULL, wxString()),
 	m_modified(false)
 {
 	if (!createFile)
 		ParseFile();
+}
+
+WADDirectory* WADArchive::FindDir(const wxString& path, bool createIfNotFound)
+{
+	wxFileName fn(path);
+	WADDirectory* currentDir = &m_rootDir;
+	for (auto it = fn.GetDirs().begin(); it != fn.GetDirs().end(); ++it)
+	{
+		WADDirectory* subDir = currentDir->FindDir(*it);
+		if (!subDir)
+		{
+			if (createIfNotFound)
+				currentDir = currentDir->AddDir(*it);
+			else
+				return NULL;
+		}
+		else
+		{
+			currentDir = subDir;
+		}
+	}
+
+	return currentDir;
 }
 
 void WADArchive::ParseFile()
@@ -92,6 +116,9 @@ void WADArchive::ParseFile()
 
 			m_entries.push_back(WADArchiveEntry(fileName, fileSize, fileOffset));
 		}
+
+		WADDirectory* dir = FindDir(fileName, true);
+		dir->AddEntry(&m_entries.back());
 	}
 
 	if (m_format == FmtHM2v2)
