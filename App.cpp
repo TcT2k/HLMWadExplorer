@@ -18,6 +18,7 @@ public:
 		wxImage::AddHandler(new wxPNGHandler());
 		wxImage::AddHandler(new wxJPEGHandler());
 		wxImage::AddHandler(new wxGIFHandler());
+		wxImage::AddHandler(new wxTGAHandler());
 
 		SetAppName("HLMWADExplorer");
 		SetAppDisplayName("HLM WAD Explorer");

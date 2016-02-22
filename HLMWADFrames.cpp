@@ -32,6 +32,12 @@ BaseExploreFrame::BaseExploreFrame( wxWindow* parent, wxWindowID id, const wxStr
 	
 	m_fileMenu->AppendSeparator();
 	
+	wxMenuItem* mergePatch;
+	mergePatch = new wxMenuItem( m_fileMenu, ID_MERGE, wxString( _("&Merge patch...") ) + wxT('\t') + wxT("Ctrl+M"), wxEmptyString, wxITEM_NORMAL );
+	m_fileMenu->Append( mergePatch );
+	
+	m_fileMenu->AppendSeparator();
+	
 	wxMenuItem* openBaseWad;
 	openBaseWad = new wxMenuItem( m_fileMenu, ID_OPEN_BASE_WAD, wxString( _("Switch base wad...") ) , wxEmptyString, wxITEM_NORMAL );
 	m_fileMenu->Append( openBaseWad );
@@ -159,6 +165,7 @@ BaseExploreFrame::BaseExploreFrame( wxWindow* parent, wxWindowID id, const wxStr
 	this->Connect( open->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnOpenClicked ) );
 	this->Connect( save->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnSaveClicked ) );
 	this->Connect( saveas->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnSaveAsClicked ) );
+	this->Connect( mergePatch->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnMergeClicked ) );
 	this->Connect( openBaseWad->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnSwitchBaseWadClicked ) );
 	this->Connect( quit->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnQuitClicked ) );
 	this->Connect( extract->GetId(), wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnExtractClicked ) );
@@ -181,6 +188,7 @@ BaseExploreFrame::~BaseExploreFrame()
 	this->Disconnect( wxID_OPEN, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnOpenClicked ) );
 	this->Disconnect( wxID_SAVE, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnSaveClicked ) );
 	this->Disconnect( wxID_SAVEAS, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnSaveAsClicked ) );
+	this->Disconnect( ID_MERGE, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnMergeClicked ) );
 	this->Disconnect( ID_OPEN_BASE_WAD, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnSwitchBaseWadClicked ) );
 	this->Disconnect( wxID_EXIT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnQuitClicked ) );
 	this->Disconnect( ID_EXTRACT, wxEVT_COMMAND_MENU_SELECTED, wxCommandEventHandler( BaseExploreFrame::OnExtractClicked ) );
@@ -195,6 +203,48 @@ BaseExploreFrame::~BaseExploreFrame()
 	this->Disconnect( wxID_ANY, wxEVT_COMMAND_DATAVIEW_SELECTION_CHANGED, wxDataViewEventHandler( BaseExploreFrame::OnFileListSelectionChanged ) );
 	m_fileListCtrl->Disconnect( wxEVT_LEFT_DCLICK, wxMouseEventHandler( BaseExploreFrame::OnFileListDoubleClick ), NULL, this );
 	
+}
+
+BaseMergeDialog::BaseMergeDialog( wxWindow* parent, wxWindowID id, const wxString& title, const wxPoint& pos, const wxSize& size, long style ) : wxDialog( parent, id, title, pos, size, style )
+{
+	this->SetSizeHints( wxDefaultSize, wxDefaultSize );
+	
+	wxBoxSizer* bSizer15;
+	bSizer15 = new wxBoxSizer( wxVERTICAL );
+	
+	m_staticText11 = new wxStaticText( this, wxID_ANY, _("Base WAD File:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText11->Wrap( -1 );
+	bSizer15->Add( m_staticText11, 0, wxALL, 5 );
+	
+	m_baseFilePicker = new wxFilePickerCtrl( this, wxID_ANY, wxEmptyString, _("Select a file"), wxT("*.wad"), wxDefaultPosition, wxDefaultSize, wxFLP_DEFAULT_STYLE|wxFLP_FILE_MUST_EXIST );
+	bSizer15->Add( m_baseFilePicker, 0, wxEXPAND|wxLEFT|wxRIGHT, 5 );
+	
+	m_staticText12 = new wxStaticText( this, wxID_ANY, _("Patch WAD:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText12->Wrap( -1 );
+	bSizer15->Add( m_staticText12, 0, wxALL, 5 );
+	
+	m_patchFilePicker = new wxFilePickerCtrl( this, wxID_ANY, wxEmptyString, _("Select a file"), wxT("*.patchwad"), wxDefaultPosition, wxDefaultSize, wxFLP_DEFAULT_STYLE|wxFLP_FILE_MUST_EXIST );
+	bSizer15->Add( m_patchFilePicker, 0, wxEXPAND|wxLEFT|wxRIGHT, 5 );
+	
+	m_sdbSizer = new wxStdDialogButtonSizer();
+	m_sdbSizerOK = new wxButton( this, wxID_OK );
+	m_sdbSizer->AddButton( m_sdbSizerOK );
+	m_sdbSizerCancel = new wxButton( this, wxID_CANCEL );
+	m_sdbSizer->AddButton( m_sdbSizerCancel );
+	m_sdbSizer->Realize();
+	
+	bSizer15->Add( m_sdbSizer, 0, wxEXPAND, 5 );
+	
+	
+	this->SetSizer( bSizer15 );
+	this->Layout();
+	bSizer15->Fit( this );
+	
+	this->Centre( wxBOTH );
+}
+
+BaseMergeDialog::~BaseMergeDialog()
+{
 }
 
 BaseTexturePackPanel::BaseTexturePackPanel( wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style ) : wxPanel( parent, id, pos, size, style )

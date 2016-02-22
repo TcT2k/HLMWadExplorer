@@ -27,6 +27,7 @@
 #include "TexturePack.h"
 #include "TexturePackPanel.h"
 #include "StringTablePanel.h"
+#include "MergeDialog.h"
 #include "VersionInfo.h"
 
 class FileDataModel : public wxDataViewVirtualListModel
@@ -394,6 +395,35 @@ void ExploreFrame::OnSaveAsClicked( wxCommandEvent& event )
 	}
 }
 
+void ExploreFrame::OnMergeClicked( wxCommandEvent& event )
+{
+	MergeDialog dlg(this);
+	dlg.SetBaseWAD(m_archive->GetFileName());
+	if (dlg.ShowModal() == wxID_OK)
+	{
+		WADArchive patchArchive(dlg.GetPatchWAD());
+
+		wxMessageDialog msgDlg(this, wxString::Format(_("Applying patch\n\nThis patch contains %d new/modified files.\nAre you sure you want to apply this patch?"),
+													  patchArchive.GetEntryCount()), _("Warning"),
+							   wxICON_WARNING | wxOK | wxCANCEL | wxCANCEL_DEFAULT);
+		msgDlg.SetOKLabel(_("Patch"));
+
+		if (msgDlg.ShowModal() == wxID_OK)
+		{
+			wxBusyCursor busyCursor;
+			wxBusyInfo busyInfo(_("Merging patch..."));
+
+			WADArchive baseArchive(dlg.GetBaseWAD());
+			baseArchive.LoadPatch(dlg.GetPatchWAD());
+			// Save archive
+			if (baseArchive.Write())
+			{
+				wxLogInfo(_("Patch merged"));
+			}
+		}
+	}
+}
+
 void ExploreFrame::OnSwitchBaseWadClicked(wxCommandEvent& event)
 {
 	OpenBaseFile(true);
@@ -602,7 +632,8 @@ void ExploreFrame::OnFileListSelectionChanged( wxDataViewEvent& event )
 	wxString fileExt = fn.GetExt();
 
 	if (fileExt.IsSameAs("png", false) ||
-		fileExt.IsSameAs("jpg", false))
+		fileExt.IsSameAs("jpg", false) ||
+		fileExt.IsSameAs("tga", false))
 	{
 		m_previewBookCtrl->ChangeSelection(1);
 
@@ -630,7 +661,8 @@ void ExploreFrame::OnFileListSelectionChanged( wxDataViewEvent& event )
 	else if (fileExt.IsSameAs("fnt", false) ||
 			fileExt.IsSameAs("ini", false) ||
 			fileExt.IsSameAs("vsh", false) ||
-			 fileExt.IsSameAs("fsh", false))
+			fileExt.IsSameAs("fsh", false) ||
+			fileExt.IsSameAs("cg", false) )
 	{
 		m_previewBookCtrl->ChangeSelection(3);
 		TextPanel* textPanel = (TextPanel*) m_previewBookCtrl->GetCurrentPage();
