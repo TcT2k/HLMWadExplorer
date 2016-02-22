@@ -602,7 +602,8 @@ void ExploreFrame::OnFileListSelectionChanged( wxDataViewEvent& event )
 	wxString fileExt = fn.GetExt();
 
 	if (fileExt.IsSameAs("png", false) ||
-		fileExt.IsSameAs("jpg", false))
+		fileExt.IsSameAs("jpg", false) ||
+		fileExt.IsSameAs("tga", false))
 	{
 		m_previewBookCtrl->ChangeSelection(1);
 
