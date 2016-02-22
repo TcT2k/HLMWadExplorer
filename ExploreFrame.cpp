@@ -631,7 +631,8 @@ void ExploreFrame::OnFileListSelectionChanged( wxDataViewEvent& event )
 	else if (fileExt.IsSameAs("fnt", false) ||
 			fileExt.IsSameAs("ini", false) ||
 			fileExt.IsSameAs("vsh", false) ||
-			 fileExt.IsSameAs("fsh", false))
+			fileExt.IsSameAs("fsh", false) ||
+			fileExt.IsSameAs("cg", false) )
 	{
 		m_previewBookCtrl->ChangeSelection(3);
 		TextPanel* textPanel = (TextPanel*) m_previewBookCtrl->GetCurrentPage();
