@@ -31,7 +31,7 @@ public:
 		return 0;
 	}
 
-	virtual WADDirEntry* GetChild(size_t index) override
+	virtual WADDirEntry* GetChild(size_t index) const override
 	{
 		return NULL;
 	}
@@ -62,7 +62,7 @@ public:
 		return m_entries.size();
 	}
 
-	virtual WADDirEntry* GetChild(size_t index) override
+	virtual WADDirEntry* GetChild(size_t index) const override
 	{
 		return m_entries[index].get();
 	}
@@ -90,6 +90,38 @@ private:
 	wxVector< wxSharedPtr<WADDirEntry> > m_entries;
 };
 
+//
+// WADDirEntry
+//
+wxString WADDirEntry::GetPath() const
+{
+	wxString path = m_name;
+
+	WADDirEntry* parent = GetParent();
+	while (parent && !parent->GetName().empty())
+	{
+		path.insert(0, parent->GetName() + "/");
+		parent = parent->GetParent();
+	}
+
+	return path;
+}
+
+size_t WADDirEntry::GetDirCount() const
+{
+	size_t dirCount = 0;
+
+	for (size_t i = 0; i < GetChildCount(); ++i)
+	{
+		WADDirEntry* subDir = GetChild(i);
+		if (!subDir->GetEntry())
+			dirCount++;
+
+		dirCount += subDir->GetDirCount();
+	}
+
+	return dirCount;
+}
 
 //
 // WADArchive
@@ -296,8 +328,43 @@ bool WADArchive::Write()
 	return Write(m_fileName);
 }
 
+static void WriteFileName(const wxString& str, wxOutputStream& oStr)
+{
+	wxScopedCharBuffer utf8FN = str.utf8_str();
+	wxUint32 fileNameLength = utf8FN.length();
+	oStr.Write(&fileNameLength, sizeof(fileNameLength));
+	oStr.Write(utf8FN.data(), fileNameLength);
+}
+
+static void WriteDir(WADDirEntry* dir, wxOutputStream& oStr)
+{
+	WriteFileName(dir->GetPath(), oStr);
+
+	wxUint32 entryCount = dir->GetChildCount();
+	oStr.Write(&entryCount, sizeof(entryCount));
+
+	// Write entries
+	for (size_t i = 0; i < entryCount; ++i)
+	{
+		WADDirEntry* entry = dir->GetChild(i);
+		WriteFileName(entry->GetName(), oStr);
+		wxUint8 type = (entry->GetEntry()) ? 0 : 1;
+		oStr.Write(&type, sizeof(type));
+	}
+
+	// Write child directories
+	for (size_t i = 0; i < entryCount; ++i)
+	{
+		WADDirEntry* entry = dir->GetChild(i);
+		if (!entry->GetEntry())
+			WriteDir(entry, oStr);
+	}
+}
+
 bool WADArchive::Write(wxOutputStream& oStr)
 {
+	ApplyFilter("");
+
 	if (m_format == FmtHM2v2)
 	{
 		// Write header
@@ -319,11 +386,7 @@ bool WADArchive::Write(wxOutputStream& oStr)
 	
 	for (auto entry = m_entries.begin(); entry != m_entries.end(); ++entry)
 	{
-		wxScopedCharBuffer utf8FN = entry->GetFileName().utf8_str();
-		wxUint32 fileNameLength = utf8FN.length();
-		oStr.Write(&fileNameLength, sizeof(fileNameLength));
-		
-		oStr.Write(utf8FN.data(), fileNameLength);
+		WriteFileName(entry->GetFileName(), oStr);
 		
 		wxUint64 fileSize = entry->GetSize();
 		oStr.Write(&fileSize, sizeof(fileSize));
@@ -335,11 +398,11 @@ bool WADArchive::Write(wxOutputStream& oStr)
 
 	if (m_format == FmtHM2v2)
 	{
-		// Write empty directory map
-		wxUint32 dummyDirCount = 0;
-		oStr.Write(&dummyDirCount, sizeof(dummyDirCount));
+		// Write directory map
+		wxUint32 dirCount = m_rootDir->GetDirCount() + 1;
+		oStr.Write(&dirCount, sizeof(dirCount));
 
-		currentDataOffset += 4;
+		WriteDir(m_rootDir.get(), oStr);
 	}
 	
 	// Write file data

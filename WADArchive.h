@@ -115,7 +115,7 @@ public:
 
 	virtual size_t GetChildCount() const = 0;
 
-	virtual WADDirEntry* GetChild(size_t index) = 0;
+	virtual WADDirEntry* GetChild(size_t index) const = 0;
 
 	virtual WADArchiveEntry* GetEntry() const = 0;
 
@@ -133,6 +133,10 @@ public:
 	{
 		return GetChildCount() == 0;
 	}
+
+	wxString GetPath() const;
+
+	size_t GetDirCount() const;
 
 protected:
 	wxString m_name;
