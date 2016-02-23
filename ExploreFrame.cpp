@@ -20,6 +20,7 @@
 #include <wx/persist.h>
 #include <wx/persist/toplevel.h>
 #include <wx/msgdlg.h>
+#include <wx/wfstream.h>
 #if defined(__WXMSW__)
 #include <wx/msw/registry.h>
 #endif
@@ -511,6 +512,62 @@ const WADArchiveEntry* ExploreFrame::GetSelectedEntry() const
 		return NULL;
 }
 
+void ExploreFrame::ExtractPak(const WADArchiveEntry* entry)
+{
+	wxString extractFolder = wxStandardPaths::Get().GetDocumentsDir();
+	wxDirDialog dirDlg(this, _("Select folder to PAK file contents to"), extractFolder, wxDD_DEFAULT_STYLE);
+	if (dirDlg.ShowModal() == wxID_OK)
+	{
+		wxMemoryOutputStream oStr;
+		m_archive->Extract(*entry, oStr);
+		wxMemoryInputStream iStr(oStr);
+		wxUint32 fileCount;
+		iStr.Read(&fileCount, sizeof(fileCount));
+		wxLogDebug("%d files in PAK", fileCount);
+
+		wxFileName pakFN(entry->GetFileName(), wxPATH_UNIX);
+
+		// Create base extraction path
+		wxFileName extFolder(extractFolder, "");
+		extFolder.AppendDir(pakFN.GetName() + "_expak");
+		extFolder.Mkdir(wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
+
+		wxVector<wxUint32> offsets;
+		offsets.reserve(fileCount);
+		for (int i = 0; i < fileCount; ++i)
+		{
+			wxUint32 offset;
+			iStr.Read(&offset, sizeof(offset));
+			wxLogDebug("%d: %d", i, offset);
+			offsets.push_back(offset);
+		}
+		offsets.push_back(entry->GetSize());
+
+		char* rawData = new char[entry->GetSize()];
+		oStr.CopyTo(rawData, entry->GetSize());
+
+		// Extract files
+		for (int i = 0; i < fileCount; ++i)
+		{
+			wxString name = wxString::Format("%d", i);
+			wxFileName dataFN(extFolder.GetFullPath(), name);
+
+			wxTempFileOutputStream fileStr(dataFN.GetFullPath());
+			fileStr.Write(&rawData[offsets[i]],
+				offsets[i + 1] - offsets[i]);
+
+			fileStr.Commit();
+		}
+
+		delete[] rawData;
+
+		wxMessageDialog msgDlg(this, _("The PAK contents have been extracted\n\nDo you want to open the folder it was extracted to?"), _("Information"), wxICON_INFORMATION | wxOK | wxCANCEL);
+		msgDlg.SetOKCancelLabels(_("Open Folder"), wxID_CLOSE);
+		if (msgDlg.ShowModal() == wxID_OK)
+			wxLaunchDefaultApplication(extFolder.GetFullPath());
+	}
+}
+
 void ExploreFrame::OnExtractClicked( wxCommandEvent& event )
 {
 	if (m_fileListCtrl->GetSelectedItemsCount() == 0)
@@ -553,6 +610,13 @@ void ExploreFrame::OnExtractClicked( wxCommandEvent& event )
 		wxASSERT(entry);
 
 		wxFileName fn(entry->GetFileName(), wxPATH_UNIX);
+		if (fn.GetExt().IsSameAs("pak", false) && !wxGetKeyState(WXK_SHIFT))
+		{
+			// Extract pak to single files
+			ExtractPak(entry);
+
+			return;
+		}
 
 		wxString fileName = fn.GetFullName();
 		wxFileDialog fileDlg(this, _("Select target for file extraction"), extractFolder, fileName, 

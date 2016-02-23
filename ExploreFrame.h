@@ -77,6 +77,8 @@ class ExploreFrame : public BaseExploreFrame
 		void ApplyFilter(const wxString& filter);
 
 		bool CreatePatch();
+
+		void ExtractPak(const WADArchiveEntry* entry);
 };
 
 #endif // __ExploreFrame__
