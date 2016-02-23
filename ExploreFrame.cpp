@@ -194,7 +194,7 @@ void ExploreFrame::OnAboutClicked( wxCommandEvent& event )
 	wxAboutDialogInfo aboutInfo;
 	aboutInfo.SetName(wxTheApp->GetAppDisplayName());
 	aboutInfo.SetDescription(_("HLM Wad Extractor"));
-	aboutInfo.SetCopyright("(C) 2015");
+	aboutInfo.SetCopyright("(C) 2015-2016");
 	aboutInfo.SetWebSite("https://github.com/TcT2k/HLMWadExplorer");
 	aboutInfo.AddDeveloper("Tobias Taschner");
 	aboutInfo.AddArtist("LightVelox");
