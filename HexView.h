@@ -1,10 +1,13 @@
 #ifndef HexView__INCLUDED
 #define HexView__INCLUDED
 
-#include <wx/scrolwin.h>
+#include <wx/control.h>
 #include <wx/stream.h>
 
-class HexView: public wxScrolledCanvas
+class HexRowView;
+class wxPanel;
+
+class HexView: public wxControl
 {
 public:
 	
@@ -30,21 +33,15 @@ public:
 	bool Load(wxInputStream& iStr);
 	
 private:
+	wxPanel* m_header;
+	HexRowView* m_rowView;
 	unsigned char* m_data;
 	size_t m_dataSize;
 	int m_rowsize;
-	int m_rowHeight;
-	int m_charWidth;
 	
-	void CalcSize();
-	
-	void OnPaint(wxPaintEvent& event);
-	
-	void OnSetCursor(wxSetCursorEvent& event);
-	
-	void OnLeftDown(wxMouseEvent& event);
-	
-	void OnLeftUp(wxMouseEvent& event);
+	void OnPaintHeader(wxPaintEvent& evt);
+
+	friend class HexRowView;
 };
 
 #endif // HexView__INCLUDED
