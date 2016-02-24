@@ -113,6 +113,8 @@ public:
 	virtual ~WADDirEntry()
 	{ }
 
+	virtual bool IsContainer() const = 0;
+	
 	virtual size_t GetChildCount() const = 0;
 
 	virtual WADDirEntry* GetChild(size_t index) const = 0;

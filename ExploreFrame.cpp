@@ -101,7 +101,7 @@ public:
 			return true;
 
 		WADDirEntry* dir = static_cast<WADDirEntry*>(item.GetID());
-		return !dir->GetEntry();
+		return dir->IsContainer();
 	}
 
 	unsigned int GetChildren(const wxDataViewItem &parent, wxDataViewItemArray &array) const
