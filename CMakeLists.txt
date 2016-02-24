@@ -42,6 +42,8 @@ set(SRCS ${SRCS}
 	TexturePackPanel.cpp
 	StringTablePanel.h
 	StringTablePanel.cpp
+	HexView.h
+	HexView.cpp
 	)
 	
 if (APPLE)
