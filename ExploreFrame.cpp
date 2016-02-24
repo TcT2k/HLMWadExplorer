@@ -30,6 +30,7 @@
 #include "StringTablePanel.h"
 #include "MergeDialog.h"
 #include "VersionInfo.h"
+#include "HexView.h"
 
 class FileDataModel : public wxDataViewModel
 {
@@ -160,8 +161,14 @@ ExploreFrame::ExploreFrame( wxWindow* parent ):
 		wxConfigPathChanger pathChanger(wxConfigBase::Get(), "/FileHistory/PatchFiles/");
 		m_fileHistory.Load(*wxConfigBase::Get());
 	}
+	
+	wxPanel* genPanel = new wxPanel(m_previewBookCtrl);
+	wxSizer* genSizer = new wxBoxSizer(wxVERTICAL);
+	m_hexView = new HexView(genPanel);
+	genSizer->Add(m_hexView, wxSizerFlags(1).Expand());
+	genPanel->SetSizer(genSizer);
 
-	m_previewBookCtrl->AddPage(new wxPanel(m_previewBookCtrl), "General", true);
+	m_previewBookCtrl->AddPage(genPanel, "General", true);
 	m_previewBookCtrl->AddPage(new ImagePanel(m_previewBookCtrl), "Image", false);
 	m_previewBookCtrl->AddPage(new TexturePackPanel(m_previewBookCtrl), "Texture", false);
 	m_previewBookCtrl->AddPage(new TextPanel(m_previewBookCtrl), "Text", false);
@@ -753,6 +760,7 @@ void ExploreFrame::OnFileListSelectionChanged( wxDataViewEvent& event )
 	if (!entry)
 	{
 		// Directory selected
+		m_hexView->Clear();
 		m_previewBookCtrl->ChangeSelection(0);
 		return;
 	}
@@ -818,7 +826,14 @@ void ExploreFrame::OnFileListSelectionChanged( wxDataViewEvent& event )
 		stringPanel->LoadStringTable(buffer->GetBufferStart(), buffer->GetBufferSize());
 	}
 	else
+	{
 		m_previewBookCtrl->ChangeSelection(0);
+		
+		wxMemoryOutputStream oStr;
+		m_archive->Extract(*entry, oStr);
+		wxMemoryInputStream iStr(oStr);
+		m_hexView->Load(iStr);
+	}
 }
 
 void ExploreFrame::OnFileListDoubleClick( wxMouseEvent& event )
